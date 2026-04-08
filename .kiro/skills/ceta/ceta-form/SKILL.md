@@ -298,3 +298,17 @@ type 值参照 `ceta-basic` 中的"字段类型映射"表。
 - Field 的 autoLock 和 forbidToUpdate 是 boolean（true/false）
 - 遇到无法映射的 HTML 结构，用 `Text` 组件兜底并告知用户
 - 输出文件使用格式化 JSON（2 空格缩进）
+
+### 输出文件的用途（重要）
+
+生成的 `-form.json` 和 `-fields.json` 是**中间产物**，不要直接通过 MCP API 创建到平台。
+
+正确流程：
+1. 本 SKILL 生成 `{entity}-form.json` 和 `{entity}-fields.json` 到 `ceta-workspace/` 目录
+2. 由 `ceta_sync.sh assemble-pbc` 将这些文件拼装为 `pbc-seed-data.json`
+3. 由 `ceta_sync.sh import-pbc` 统一导入到 CETA 平台
+
+**禁止**对包含复杂 schemaJson 的表单直接调用 `form__form_entity_layout__create` 创建布局。
+MCP API 参数有大小限制，大 schemaJson 会被截断。
+
+只有在修改已有表单的单个字段或简单布局时，才使用 MCP API 逐个操作。

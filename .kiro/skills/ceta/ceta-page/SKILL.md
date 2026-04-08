@@ -347,6 +347,20 @@ Card 和 Table 都需要 `style: { "height": "100%" }`。
 - 遇到无法映射的 HTML 结构，用 `Text` 组件兜底并告知用户
 - 输出文件使用格式化 JSON（2 空格缩进）
 
+### 输出文件的用途（重要）
+
+生成的 `-page.json` 是**中间产物**，不要直接通过 MCP API 创建到平台。
+
+正确流程：
+1. 本 SKILL 生成 `{page}-page.json` 到 `ceta-workspace/` 目录
+2. 由 `ceta_sync.sh assemble-pbc` 将这些文件拼装为 `pbc-seed-data.json`
+3. 由 `ceta_sync.sh import-pbc` 统一导入到 CETA 平台
+
+**禁止**对包含复杂 schemaJson 的页面直接调用 `form__form_entity_page__create` 创建。
+MCP API 参数有大小限制，复杂页面的 schemaJson（通常几千字节）会被截断，导致页面渲染异常。
+
+只有在更新已有页面的简单属性（如 name）时，才使用 MCP API 逐个操作。
+
 ## 参考文档
 - 组件详细文档（按需读取） → `skills/ceta/references/components/input/`、`skills/ceta/references/components/layout/`、`skills/ceta/references/components/display/`
 - Table 列类型和 ACTION_COLUMN → 读取 `references/table-column-types.md`

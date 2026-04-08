@@ -369,7 +369,7 @@ ceta-workspace/
 │   ├── 加载 ceta-app-config SKILL
 │   └── 生成完整 app-config.json（含菜单、主题、路由）
 │
-├── Step 2: 逐个 PBC 处理
+├── Step 2: 逐个 PBC 处理 — 生成本地 JSON 文件
 │   │
 │   ├── Step 2.1: 表单实体（FormEntity）
 │   │   ├── 加载 ceta-form SKILL
@@ -384,16 +384,47 @@ ceta-workspace/
 │   │   │   └── 生成 {page-token}-page.json（列表页 schemaJson）
 │   │   └── 关联到对应的 FormEntity
 │   │
-│   ├── Step 2.3: 应用配置（菜单+主题+路由）
-│   │   ├── 加载 ceta-app-config SKILL
-│   │   └── 根据已生成的 form/page 自动创建菜单、主题、路由配置
-│   │
-│   └── Step 2.4: 流程（如有线索）
+│   └── Step 2.3: 流程（如有线索）
 │       └── 提示用户可进一步配置流程
 │
-└── Step 3: 汇总报告
-    └── 告知用户：生成了 X 个 form、Y 个 page，文件列表
+├── Step 3: 推送到 CETA 平台（重要 — 不要跳过）
+│   │
+│   │  **禁止逐个调用 MCP API 创建表单/页面。统一走 seed data 导入。**
+│   │
+│   ├── Step 3.1: 确认/创建 Project
+│   │   └── 通过 MCP API form__project__get_by_token 检查，不存在则 form__project__create
+│   │
+│   ├── Step 3.2: 运行 assemble-pbc 拼装 pbc-seed-data.json
+│   │   └── $ ceta_sync.sh assemble-pbc {project-token} {pbc-token}
+│   │
+│   ├── Step 3.3: 修正 pbc-seed-data.json
+│   │   ├── assemble 只生成 default layout，需用 Python 脚本改为 new/edit/view 三个 layout
+│   │   ├── 补充 routesJson（PBC 级路由配置）
+│   │   └── 补充 config（PBC 级菜单配置）
+│   │   └── 详细修正逻辑见 skills/ceta/ceta-api/SKILL.md 的「post-assemble 修正」章节
+│   │
+│   ├── Step 3.4: 运行 import-pbc 导入到平台
+│   │   └── $ ceta_sync.sh import-pbc {project-token} {pbc-token}
+│   │
+│   ├── Step 3.5: 更新 frontEndConfig（菜单、路由、主题）
+│   │   └── 通过 MCP API form__front_end_config__update 更新
+│   │
+│   └── Step 3.6: 验证导入结果
+│       └── 通过 MCP API form__form_entity_page__list_by_pbc_id 确认页面 schemaJson 完整
+│
+└── Step 4: 汇总报告
+    └── 告知用户：生成了 X 个 form、Y 个 page，已导入平台，附项目 UI 链接
 ```
+
+### 为什么不能逐个调用 MCP API 创建？
+
+MCP 工具调用的参数有大小限制。复杂页面（如航班预订页、旅客录入页）的 schemaJson 通常有几千字节，
+通过 `form__form_entity_page__create` 的 `schemaJson` 参数传递时会被截断，导致：
+- 页面只显示占位文本或部分内容
+- 组件树不完整，样式丢失
+- 用户打开页面看到空白或错误
+
+**seed data 导入通过文件上传，没有参数大小限制，能保证 schemaJson 的完整性。**
 
 ### 调度规则
 
