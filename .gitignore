@@ -1,0 +1,6 @@
+ai-ext-design/
+icp/
+templates/
+.DS_Store
+html-to-platform-json/
+output/
