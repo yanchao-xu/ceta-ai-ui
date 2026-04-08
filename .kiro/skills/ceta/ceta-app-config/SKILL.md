@@ -491,10 +491,10 @@ CSS class 命名规范：
 
 ## 九、输出文件规范
 
-将生成的配置写入 `output/` 目录：
+将生成的配置写入 `ceta-workspace/` 目录：
 
 ```
-output/
+ceta-workspace/
 └── {项目名称}/
     └── {项目名称}-app-config.json   # 完整 app.config.json（菜单+主题+路由，唯一输出文件）
 ```

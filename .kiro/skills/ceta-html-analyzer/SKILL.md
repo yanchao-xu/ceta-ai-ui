@@ -18,6 +18,7 @@ metadata:
 本 SKILL 是 HTML 输入的**分析与调度层**，位于 `ceta-basic`（入口）和各模块 SKILL（ceta-form、ceta-page 等）之间。
 
 核心职责：
+
 1. 接收用户提供的 HTML（可能是完整应用原型、单个页面、或单个表单）
 2. 分析 HTML 的业务范围和复杂度
 3. 按 CETA 平台层级拆分结构
@@ -26,22 +27,24 @@ metadata:
 ## 两阶段文档加载规则（重要）
 
 **阶段一（分析）只需要加载：**
+
 - `ceta-basic`（入口 SKILL，了解平台数据模型和字段类型映射）
-- `skills/references/html-mapping-rules.md`（HTML 元素 → CETA 组件类型的映射，用于识别字段类型）
+- `skills/ceta/references/html-mapping-rules.md`（HTML 元素 → CETA 组件类型的映射，用于识别字段类型）
 
 **阶段一不需要加载：**
-- 任何组件文档（`skills/components/` 下的 Card.md、Grid.md、Button.md、Table.md 等）
-- `skills/references/style-mapping-rules.md`
+
+- 任何组件文档（`skills/ceta/references/components/` 下的 Card.md、Grid.md、Button.md、Table.md 等）
+- `skills/ceta/references/style-mapping-rules.md`
 - 子 SKILL（ceta-form、ceta-page、ceta-app-config）
 
 阶段一的目标只是识别"有几个表单、几个页面、多少字段、什么类型"，不需要知道组件的 JSON 写法。
 
 **阶段二（用户确认后生成 JSON）才按需加载：**
-- 子 SKILL（ceta-form、ceta-page、ceta-app-config）
-- `skills/references/schema-rules.md`（schemaJson 结构规范）
-- `skills/references/style-mapping-rules.md`（样式映射）
-- 具体组件文档（只读取实际用到的组件，如遇到 Grid 布局才读 Grid.md）
 
+- 子 SKILL（ceta-form、ceta-page、ceta-app-config）
+- `skills/ceta/references/schema-rules.md`（schemaJson 结构规范）
+- `skills/ceta/references/style-mapping-rules.md`（样式映射）
+- 具体组件文档（只读取实际用到的组件，如遇到 Grid 布局才读 Grid.md）
 
 ---
 
@@ -51,11 +54,11 @@ metadata:
 
 ### 判定规则
 
-| 范围级别 | 判定条件 | 示例 |
-|---------|---------|------|
-| **项目级（Project）** | HTML 包含导航栏/侧边栏菜单 + 多个独立业务区域；或包含多个 `<nav>`、多组不相关的表单/表格；或有明显的应用壳（header/sidebar/content 三栏布局） | 完整的 ERP 系统原型、带侧边栏的管理后台 |
-| **PBC 级（业务组件）** | HTML 包含同一业务域下的多个相关页面（如列表页+表单页）；或有 Tab 切换的多视图；或包含 2+ 个相关但独立的表单/表格 | 用户管理模块（用户列表+新建用户表单+角色管理） |
-| **单页面级（Page/Form）** | HTML 只包含一个表单、一个列表页、或一个仪表盘；结构单一，无导航 | 一个请假申请表单、一个订单列表页 |
+| 范围级别                  | 判定条件                                                                                                                                      | 示例                                           |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| **项目级（Project）**     | HTML 包含导航栏/侧边栏菜单 + 多个独立业务区域；或包含多个 `<nav>`、多组不相关的表单/表格；或有明显的应用壳（header/sidebar/content 三栏布局） | 完整的 ERP 系统原型、带侧边栏的管理后台        |
+| **PBC 级（业务组件）**    | HTML 包含同一业务域下的多个相关页面（如列表页+表单页）；或有 Tab 切换的多视图；或包含 2+ 个相关但独立的表单/表格                              | 用户管理模块（用户列表+新建用户表单+角色管理） |
+| **单页面级（Page/Form）** | HTML 只包含一个表单、一个列表页、或一个仪表盘；结构单一，无导航                                                                               | 一个请假申请表单、一个订单列表页               |
 
 ### 判定流程
 
@@ -75,7 +78,6 @@ metadata:
    "这个 HTML 看起来包含了 [X] 和 [Y]，请问这是一个完整应用的原型，
     还是某个模块的页面？"
 ```
-
 
 ---
 
@@ -104,7 +106,7 @@ metadata:
 #### 项目级输出结构
 
 ```
-output/
+ceta-workspace/
 └── {project-token}/
     ├── analysis.json              # 分析结果摘要
     ├── {project-token}-app-config.json  # 完整 app.config.json（菜单+主题+路由，唯一的全局配置文件）
@@ -123,11 +125,11 @@ output/
 
 **这是最关键的判断，必须准确。**
 
-| 概念 | 本质 | 字段是否存数据库 | 典型场景 |
-|------|------|----------------|---------|
-| FormEntity（表单实体） | 数据模型，定义字段，和数据库表一一映射 | ✅ 是，每个字段对应数据库列 | 新建订单、编辑用户信息、填写申请表 |
-| FormEntity Layout | 同一套数据（同一个 FormEntity）的不同 UI 表现形式 | 共享同一套字段 | new（新建视图）、edit（编辑视图）、view（只读视图） |
-| FormEntityPage（页面） | 纯 UI 交互页面，字段不存数据库 | ❌ 否，仅用于用户交互 | 搜索页、筛选页、仪表盘、列表页、首页 |
+| 概念                   | 本质                                              | 字段是否存数据库            | 典型场景                                            |
+| ---------------------- | ------------------------------------------------- | --------------------------- | --------------------------------------------------- |
+| FormEntity（表单实体） | 数据模型，定义字段，和数据库表一一映射            | ✅ 是，每个字段对应数据库列 | 新建订单、编辑用户信息、填写申请表                  |
+| FormEntity Layout      | 同一套数据（同一个 FormEntity）的不同 UI 表现形式 | 共享同一套字段              | new（新建视图）、edit（编辑视图）、view（只读视图） |
+| FormEntityPage（页面） | 纯 UI 交互页面，字段不存数据库                    | ❌ 否，仅用于用户交互       | 搜索页、筛选页、仪表盘、列表页、首页                |
 
 #### 判断规则
 
@@ -152,18 +154,19 @@ HTML 中的一个区域包含输入字段时，问自己：
 
 #### 常见误判场景
 
-| 场景 | 错误判断 | 正确判断 | 原因 |
-|------|---------|---------|------|
-| 搜索页面有输入框 | ❌ FormEntity | ✅ Page | 搜索条件不存数据库，只是查询参数 |
-| 列表页上方有筛选区 | ❌ FormEntity | ✅ Page | 筛选条件是 UI 交互，不是数据模型 |
-| 登录页有用户名密码 | ❌ FormEntity | ✅ Page | 登录凭证不是业务数据模型 |
-| 新建订单表单 | ✅ FormEntity | ✅ FormEntity | 订单数据需要存库 |
-| 编辑用户信息 | ✅ FormEntity | ✅ FormEntity | 用户数据需要存库，编辑是另一个 Layout |
-| 订单详情只读页 | ❌ Page | ✅ FormEntity 的 view Layout | 展示的是同一套数据模型，只是只读视图 |
+| 场景               | 错误判断      | 正确判断                     | 原因                                  |
+| ------------------ | ------------- | ---------------------------- | ------------------------------------- |
+| 搜索页面有输入框   | ❌ FormEntity | ✅ Page                      | 搜索条件不存数据库，只是查询参数      |
+| 列表页上方有筛选区 | ❌ FormEntity | ✅ Page                      | 筛选条件是 UI 交互，不是数据模型      |
+| 登录页有用户名密码 | ❌ FormEntity | ✅ Page                      | 登录凭证不是业务数据模型              |
+| 新建订单表单       | ✅ FormEntity | ✅ FormEntity                | 订单数据需要存库                      |
+| 编辑用户信息       | ✅ FormEntity | ✅ FormEntity                | 用户数据需要存库，编辑是另一个 Layout |
+| 订单详情只读页     | ❌ Page       | ✅ FormEntity 的 view Layout | 展示的是同一套数据模型，只是只读视图  |
 
 #### Layout 的含义
 
 一个 FormEntity 可以有多个 Layout，每个 Layout 是同一套字段的不同 UI 表现：
+
 - `new` — 新建视图（所有字段可编辑，有提交按钮）
 - `edit` — 编辑视图（部分字段可编辑，有保存按钮）
 - `view` — 查看视图（所有字段只读）
@@ -218,13 +221,14 @@ PBC 对应的 HTML 片段
 #### PBC 级输出结构与文件命名
 
 ```
-output/{project-token}/pbcs/{pbc-token}/
+ceta-workspace/{project-token}/pbcs/{pbc-token}/
 ├── {entity-token}-form.json       # FormEntity 的表单布局 schemaJson
 ├── {entity-token}-fields.json     # FormEntity 的字段定义（和数据库映射）
 └── {page-token}-page.json         # Page 的页面配置 schemaJson
 ```
 
 **文件名 = token + 类型后缀**，app-config.json 中引用的 token 必须和文件名一一对应：
+
 - FormEntity token `passenger-info` → 文件 `passenger-info-form.json` + `passenger-info-fields.json`
 - Page token `pnr-search` → 文件 `pnr-search-page.json`
 - app-config.json 中的路由：`/pnr-management/page/pnr-search` 对应 `pnr-search-page.json`
@@ -252,7 +256,7 @@ output/{project-token}/pbcs/{pbc-token}/
 #### 单页面级输出结构
 
 ```
-output/
+ceta-workspace/
 └── {业务名称}/
     ├── analysis.json              # 分析结果（scope: "page"）
     ├── {业务名称}-form.json       # 表单布局 schemaJson（如有）
@@ -264,15 +268,15 @@ output/
 
 ## 输出目录硬性规范
 
-**所有生成物必须写入 `output/` 目录，不允许写到其他位置。**
+**所有生成物必须写入 `ceta-workspace/` 目录，不允许写到其他位置。**
 
 ### 目录结构总览（按范围级别）
 
-| 范围 | 输出根目录 | 说明 |
-|------|-----------|------|
-| 项目级 | `output/{project-token}/` | 含 analysis.json + frontend-config + pbcs 子目录 |
-| PBC 级 | `output/{pbc-token}/` | 含 analysis.json + form/page/fields json |
-| 单页面级 | `output/{业务名称}/` | 含 analysis.json + form 或 page json |
+| 范围     | 输出根目录                | 说明                                             |
+| -------- | ------------------------- | ------------------------------------------------ |
+| 项目级   | `ceta-workspace/{project-token}/` | 含 analysis.json + frontend-config + pbcs 子目录 |
+| PBC 级   | `ceta-workspace/{pbc-token}/`     | 含 analysis.json + form/page/fields json         |
+| 单页面级 | `ceta-workspace/{业务名称}/`      | 含 analysis.json + form 或 page json             |
 
 ---
 
@@ -287,14 +291,14 @@ output/
                               用户说"改一下 XX" ──→ 修改 analysis.json → 重新确认
                               用户说"不要了" ──→ 结束
                                                     │
-阶段二：按 analysis.json 蓝图 → 调度子 SKILL → 逐个生成文件到 output/
+阶段二：按 analysis.json 蓝图 → 调度子 SKILL → 逐个生成文件到 ceta-workspace/
 ```
 
 ### 阶段一：分析并等待确认
 
 完成第一步（范围判定）和第二步（结构拆分）后：
 
-1. **生成 analysis.json** 到 `output/{根目录}/analysis.json`
+1. **生成 analysis.json** 到 `ceta-workspace/{根目录}/analysis.json`
 2. **向用户展示分析摘要**，格式如下：
 
 ```
@@ -324,8 +328,8 @@ output/
   2. role-list（角色列表）— 列表页，关联表单 user-role
   3. user-search（用户搜索）— 搜索页，搜索条件仅用于查询
 
-📁 将生成以下文件到 output/：
-  output/user-management/
+📁 将生成以下文件到 ceta-workspace/：
+  ceta-workspace/user-management/
   ├── analysis.json
   ├── system-user-form.json          ← FormEntity: system-user 的布局
   ├── system-user-fields.json        ← FormEntity: system-user 的字段定义
@@ -343,16 +347,16 @@ output/
 请确认以上分析是否正确？如需调整请告诉我。
 ```
 
-3. **停下来等待用户回复**，不做任何文件生成（analysis.json 除外）
+1. **停下来等待用户回复**，不做任何文件生成（analysis.json 除外）
 
 ### 用户确认的几种情况
 
-| 用户回复 | 处理方式 |
-|---------|---------|
-| "确认" / "可以" / "没问题" / "OK" / "生成吧" | 进入阶段二，开始生成 |
-| "XX 字段不要了" / "加一个 YY 字段" / "表单名改成 ZZ" | 修改 analysis.json，重新展示摘要，再次等待确认 |
-| "这个表单不需要" / "去掉 XX 页面" | 从 analysis.json 中移除，重新展示，再次等待确认 |
-| "不要了" / "取消" | 结束流程，不生成任何文件 |
+| 用户回复                                             | 处理方式                                        |
+| ---------------------------------------------------- | ----------------------------------------------- |
+| "确认" / "可以" / "没问题" / "OK" / "生成吧"         | 进入阶段二，开始生成                            |
+| "XX 字段不要了" / "加一个 YY 字段" / "表单名改成 ZZ" | 修改 analysis.json，重新展示摘要，再次等待确认  |
+| "这个表单不需要" / "去掉 XX 页面"                    | 从 analysis.json 中移除，重新展示，再次等待确认 |
+| "不要了" / "取消"                                    | 结束流程，不生成任何文件                        |
 
 ### 阶段二：按蓝图生成
 
@@ -393,13 +397,13 @@ output/
 
 ### 调度规则
 
-| 识别到的内容 | 调度目标 | 传递信息 |
-|-------------|---------|---------|
-| 表单/输入字段 | `skills/ceta/ceta-form/SKILL.md` | analysis.json 中的字段清单 + HTML 片段 + 布局结构 |
-| 数据表格/列表 | `skills/ceta/ceta-page/SKILL.md` | analysis.json 中的列定义 + HTML 片段 + 关联 FormEntity |
-| 全局样式/主题 | `skills/ceta/ceta-app-config/SKILL.md` | CSS 变量 + 颜色 + 字体 |
-| 菜单/导航 | `skills/ceta/ceta-app-config/SKILL.md` | 菜单项列表 + 路由映射 |
-| 审批/流程按钮 | 提示用户 | 流程线索描述 |
+| 识别到的内容  | 调度目标                               | 传递信息                                               |
+| ------------- | -------------------------------------- | ------------------------------------------------------ |
+| 表单/输入字段 | `skills/ceta/ceta-form/SKILL.md`       | analysis.json 中的字段清单 + HTML 片段 + 布局结构      |
+| 数据表格/列表 | `skills/ceta/ceta-page/SKILL.md`       | analysis.json 中的列定义 + HTML 片段 + 关联 FormEntity |
+| 全局样式/主题 | `skills/ceta/ceta-app-config/SKILL.md` | CSS 变量 + 颜色 + 字体                                 |
+| 菜单/导航     | `skills/ceta/ceta-app-config/SKILL.md` | 菜单项列表 + 路由映射                                  |
+| 审批/流程按钮 | 提示用户                               | 流程线索描述                                           |
 
 ### 样式保留要求（重要）
 
@@ -407,15 +411,15 @@ output/
 
 CETA 的 schemaJson 支持通过 `style` 和 `componentProps.style` 配置内联样式，
 通过 `className` 和 `componentProps.className` 引用全局 CSS class。
-参考 `skills/references/style-mapping-rules.md` 和 `templates/css/` 下的示例。
+参考 `skills/ceta/references/style-mapping-rules.md` 和 `templates/css/` 下的示例。
 
 #### 样式在 JSON 中的位置
 
-| 位置 | 作用 | 适用场景 |
-|------|------|---------|
-| `style` | 组件外层容器样式（margin、外层尺寸） | 所有组件 |
-| `componentProps.style` | 组件内部样式（padding、背景色、边框等） | 所有组件 |
-| `className` | 引用全局 CSS class（伪类、hover、复用样式） | 需要 :hover 等效果时 |
+| 位置                   | 作用                                        | 适用场景             |
+| ---------------------- | ------------------------------------------- | -------------------- |
+| `style`                | 组件外层容器样式（margin、外层尺寸）        | 所有组件             |
+| `componentProps.style` | 组件内部样式（padding、背景色、边框等）     | 所有组件             |
+| `className`            | 引用全局 CSS class（伪类、hover、复用样式） | 需要 :hover 等效果时 |
 
 #### 必须提取的样式
 
@@ -488,6 +492,7 @@ CETA 的 schemaJson 支持通过 `style` 和 `componentProps.style` 配置内联
 #### 不要生成"裸"JSON
 
 以下是错误示范（缺少样式）：
+
 ```json
 {
   "component": "Input",
@@ -497,6 +502,7 @@ CETA 的 schemaJson 支持通过 `style` 和 `componentProps.style` 配置内联
 ```
 
 正确做法是保留 HTML 中的视觉样式：
+
 ```json
 {
   "component": "Input",
@@ -508,7 +514,6 @@ CETA 的 schemaJson 支持通过 `style` 和 `componentProps.style` 配置内联
   "style": { "width": "50%" }
 }
 ```
-
 
 ---
 
@@ -522,7 +527,7 @@ analysis.json 在阶段一生成，是整个流程的蓝图。
 - 每个 formEntity 必须列出完整的字段清单（token、label、type、required）
 - `status` 字段标记当前状态：`"pending_confirmation"` 或 `"confirmed"`
 - 每个 page 必须标明关联的 formEntity 和列定义
-- `outputFiles` 数组必须列出所有将要生成的文件路径（相对于 output/）
+- `outputFiles` 数组必须列出所有将要生成的文件路径（相对于 ceta-workspace/）
 
 ### analysis.json 完整结构
 
@@ -551,11 +556,36 @@ analysis.json 在阶段一生成，是整个流程的蓝图。
           "reason": "用户数据需要持久化存储到数据库",
           "fieldCount": 5,
           "fields": [
-            { "token": "userName", "label": "用户名", "type": "TEXT_BOX", "required": true },
-            { "token": "email", "label": "邮箱", "type": "TEXT_BOX", "required": true },
-            { "token": "phone", "label": "电话", "type": "TEXT_BOX", "required": false },
-            { "token": "role", "label": "角色", "type": "SELECT", "required": false },
-            { "token": "enabled", "label": "是否启用", "type": "SWITCH", "required": false }
+            {
+              "token": "userName",
+              "label": "用户名",
+              "type": "TEXT_BOX",
+              "required": true
+            },
+            {
+              "token": "email",
+              "label": "邮箱",
+              "type": "TEXT_BOX",
+              "required": true
+            },
+            {
+              "token": "phone",
+              "label": "电话",
+              "type": "TEXT_BOX",
+              "required": false
+            },
+            {
+              "token": "role",
+              "label": "角色",
+              "type": "SELECT",
+              "required": false
+            },
+            {
+              "token": "enabled",
+              "label": "是否启用",
+              "type": "SWITCH",
+              "required": false
+            }
           ],
           "layouts": ["new", "edit", "view"],
           "outputFiles": {
@@ -570,9 +600,24 @@ analysis.json 在阶段一生成，是整个流程的蓝图。
           "reason": "角色数据需要持久化存储到数据库",
           "fieldCount": 3,
           "fields": [
-            { "token": "roleName", "label": "角色名", "type": "TEXT_BOX", "required": true },
-            { "token": "roleCode", "label": "角色编码", "type": "TEXT_BOX", "required": true },
-            { "token": "description", "label": "描述", "type": "TEXTAREA", "required": false }
+            {
+              "token": "roleName",
+              "label": "角色名",
+              "type": "TEXT_BOX",
+              "required": true
+            },
+            {
+              "token": "roleCode",
+              "label": "角色编码",
+              "type": "TEXT_BOX",
+              "required": true
+            },
+            {
+              "token": "description",
+              "label": "描述",
+              "type": "TEXTAREA",
+              "required": false
+            }
           ],
           "layouts": ["new", "edit", "view"],
           "outputFiles": {
@@ -614,9 +659,7 @@ analysis.json 在阶段一生成，是整个流程的蓝图。
           "sourceHtmlHint": "搜索/筛选区域"
         }
       ],
-      "flowHints": [
-        "检测到'提交'和'审批'按钮，可能需要审批流程"
-      ]
+      "flowHints": ["检测到'提交'和'审批'按钮，可能需要审批流程"]
     }
   ],
   "globalConfig": {
@@ -645,11 +688,11 @@ analysis.json 在阶段一生成，是整个流程的蓝图。
 
 **文件名 = token + 类型后缀**，app-config.json 中的路由必须和文件名一一对应：
 
-| 类型 | token 示例 | 输出文件名 | app-config 路由 |
-|------|-----------|-----------|----------------|
-| FormEntity | `system-user` | `system-user-form.json` + `system-user-fields.json` | `/user-management/form/system-user/layout/new` |
-| Page（列表） | `user-list` | `user-list-page.json` | `/user-management/page/user-list` |
-| Page（搜索） | `user-search` | `user-search-page.json` | `/user-management/page/user-search` |
+| 类型         | token 示例    | 输出文件名                                          | app-config 路由                                |
+| ------------ | ------------- | --------------------------------------------------- | ---------------------------------------------- |
+| FormEntity   | `system-user` | `system-user-form.json` + `system-user-fields.json` | `/user-management/form/system-user/layout/new` |
+| Page（列表） | `user-list`   | `user-list-page.json`                               | `/user-management/page/user-list`              |
+| Page（搜索） | `user-search` | `user-search-page.json`                             | `/user-management/page/user-search`            |
 
 每个 formEntity 和 page 内部都有 `outputFile` / `outputFiles` 字段，明确标注对应的文件名，确保不会出现 token 和文件名不匹配的情况。
 
@@ -659,37 +702,37 @@ analysis.json 在阶段一生成，是整个流程的蓝图。
 
 ### 导航与布局
 
-| HTML 元素/结构 | CETA 概念 | 层级 |
-|---------------|----------|------|
-| `<nav>` + 多个链接 | 菜单配置（config） | Project / PBC |
-| `<aside>` 侧边栏菜单 | 路由配置（routesJson） | Project |
-| `<header>` 应用头部 | frontEndConfig.appConfig | Project |
-| Tab/标签页切换 | 同一 PBC 下的多个页面 | PBC |
-| 面包屑导航 | 路由层级关系 | Project / PBC |
+| HTML 元素/结构       | CETA 概念                | 层级          |
+| -------------------- | ------------------------ | ------------- |
+| `<nav>` + 多个链接   | 菜单配置（config）       | Project / PBC |
+| `<aside>` 侧边栏菜单 | 路由配置（routesJson）   | Project       |
+| `<header>` 应用头部  | frontEndConfig.appConfig | Project       |
+| Tab/标签页切换       | 同一 PBC 下的多个页面    | PBC           |
+| 面包屑导航           | 路由层级关系             | Project / PBC |
 
 ### 表单相关
 
-| HTML 元素/结构 | CETA 概念 | 层级 | 判断关键 |
-|---------------|----------|------|---------|
-| `<form>` + 提交/保存按钮 | FormEntity + Layout | PBC → FormEntity | 数据需要存库 |
-| `<form>` + 搜索/查询按钮 | Page（搜索页） | PBC → Page | 搜索条件不存库 |
-| `<input>` / `<select>` / `<textarea>` 在存库表单中 | Field（字段） | FormEntity | 和数据库列映射 |
-| `<input>` / `<select>` 在搜索区域中 | Page 的 UI 组件 | Page | 仅用于查询交互 |
-| `<fieldset>` / 卡片分区 | Card 布局组件 | Layout | — |
-| 多列排列的字段 | Grid 布局组件 | Layout | — |
-| 折叠面板 | Collapse 布局组件 | Layout | — |
-| 同一数据的新建/编辑/查看视图 | 同一 FormEntity 的不同 Layout | FormEntity | 共享同一套 fields |
+| HTML 元素/结构                                     | CETA 概念                     | 层级             | 判断关键          |
+| -------------------------------------------------- | ----------------------------- | ---------------- | ----------------- |
+| `<form>` + 提交/保存按钮                           | FormEntity + Layout           | PBC → FormEntity | 数据需要存库      |
+| `<form>` + 搜索/查询按钮                           | Page（搜索页）                | PBC → Page       | 搜索条件不存库    |
+| `<input>` / `<select>` / `<textarea>` 在存库表单中 | Field（字段）                 | FormEntity       | 和数据库列映射    |
+| `<input>` / `<select>` 在搜索区域中                | Page 的 UI 组件               | Page             | 仅用于查询交互    |
+| `<fieldset>` / 卡片分区                            | Card 布局组件                 | Layout           | —                 |
+| 多列排列的字段                                     | Grid 布局组件                 | Layout           | —                 |
+| 折叠面板                                           | Collapse 布局组件             | Layout           | —                 |
+| 同一数据的新建/编辑/查看视图                       | 同一 FormEntity 的不同 Layout | FormEntity       | 共享同一套 fields |
 
 ### 列表/页面相关
 
-| HTML 元素/结构 | CETA 概念 | 层级 |
-|---------------|----------|------|
-| `<table>` | FormEntityPage（列表页） | PBC → Page |
-| 表头 `<th>` | Table 列定义 | Page |
-| 操作列（编辑/删除按钮） | ACTION_COLUMN | Page |
-| 搜索/筛选区域 | Table 的 filter 配置 | Page |
-| 分页器 | Table 的 pagination 配置 | Page |
-| 统计卡片/图表 | Dashboard portlet | Page |
+| HTML 元素/结构          | CETA 概念                | 层级       |
+| ----------------------- | ------------------------ | ---------- |
+| `<table>`               | FormEntityPage（列表页） | PBC → Page |
+| 表头 `<th>`             | Table 列定义             | Page       |
+| 操作列（编辑/删除按钮） | ACTION_COLUMN            | Page       |
+| 搜索/筛选区域           | Table 的 filter 配置     | Page       |
+| 分页器                  | Table 的 pagination 配置 | Page       |
+| 统计卡片/图表           | Dashboard portlet        | Page       |
 
 ---
 
@@ -713,6 +756,7 @@ analysis.json 在阶段一生成，是整个流程的蓝图。
 ### 2. 多文件 HTML
 
 如果用户提供多个 HTML 文件：
+
 - 每个文件视为一个独立页面
 - 如果文件名暗示同一业务域（如 `user-list.html` + `user-form.html`），归入同一 PBC
 - 如果文件名暗示不同业务域，归入不同 PBC
@@ -720,12 +764,14 @@ analysis.json 在阶段一生成，是整个流程的蓝图。
 ### 3. 不完整 HTML
 
 如果 HTML 只是片段（没有 `<html>`、`<body>` 标签）：
+
 - 直接分析内容区域
 - 默认为单页面级
 
 ### 4. 含有业务逻辑的 HTML
 
 如果 HTML 中包含 JavaScript 逻辑（如表单验证、条件显示）：
+
 - 提取验证规则 → 映射到 field 的 validation 配置
 - 提取条件显示逻辑 → 记录在 analysis.json 中供后续配置
 - 不尝试完整还原 JS 逻辑
@@ -758,12 +804,14 @@ ceta-html-analyzer（本 SKILL）
 在 `ceta-basic` 的判断规则基础上，增加以下条件：
 
 **需要加载 html-analyzer** — 满足任一条件：
+
 - HTML 内容较复杂，包含多个独立的表单或表格
 - HTML 包含导航/菜单结构
 - HTML 看起来是一个完整应用或模块的原型
 - 用户明确说"分析这个 HTML"或"把这个 HTML 转成 CETA 配置"
 
 **不需要加载 html-analyzer**（直接用 ceta-form 或 ceta-page）：
+
 - HTML 明显只是一个简单表单
 - HTML 明显只是一个简单列表页
 - 用户明确说"生成表单 JSON"或"生成列表页 JSON"
