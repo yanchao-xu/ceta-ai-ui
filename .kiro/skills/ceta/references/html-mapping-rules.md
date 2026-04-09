@@ -127,6 +127,91 @@ HTML: <button> / .ant-btn
 - `.ant-btn-primary` → `"type": "primary"`
 - 按钮文本 → `componentProps.content`
 
+#### Button 交互意图识别（重要 — 不能丢失）
+
+HTML 中的按钮不只是视觉元素，它们承载了交互行为。
+**必须分析按钮的上下文语义，确定其 action 类型，然后按 `Button.md` 的规范生成 action。**
+
+不带 action 的 Button 在 CETA 中是死按钮，点击无反应。
+
+##### 从 HTML 识别 action 类型
+
+| 按钮/HTML 特征 | 推断的 action 类型 |
+|---------------|-------------------|
+| 文本含"搜索"/"查询"/"筛选" | 通常不需要 action |
+| 文本含"创建"/"新建"/"新增" | `link` 或 `dialog` |
+| 文本含"下一步" / 步骤条暗示流程 | `link` |
+| 文本含"返回"/"上一步" | `link` 或 `cancel` |
+| 文本含"提交"/"保存"/"完成" | `submit` |
+| 文本含"取消" | `cancel` |
+| 文本含"删除" | `confirm` |
+| 文本含"编辑"/"修改" | `link` 或 `dialog` |
+| 文本含"查看"/"详情" | `link` 或 `dialog` |
+| `<a href="...">` / `onclick` 含路由 | `link` |
+| 按钮关联了 modal/dialog 弹窗 | `dialog` |
+| 按钮关联了确认弹窗 | `confirm` |
+
+##### 如何判断按钮的交互目标
+
+1. **显式线索**：`<a href="...">`、`onclick`、`data-target="#modalId"`、`aria-controls`
+2. **流程线索**：步骤条（stepper）中的步骤顺序暗示页面间前后关系
+3. **语义线索**：按钮文本中的目标名称（如"下一步: 旅客信息"）
+4. **弹窗关联**：按钮附近有 `.modal` / `role="dialog"` / 隐藏的弹窗容器
+5. **布局线索**：按钮在某个 Tab/视图中，点击后切换到另一个 Tab/视图
+
+##### link vs dialog 的选择
+
+| 场景 | 用 link | 用 dialog |
+|------|---------|----------|
+| 跳转到独立的完整页面 | ✅ | |
+| 流程中的下一步（步骤条） | ✅ | |
+| 在当前页面上方弹出编辑/查看表单 | | ✅ |
+| 快速新建（不离开当前列表页） | | ✅ |
+| 确认操作（删除、取消等） | | 用 `confirm` |
+
+##### 确定 action 类型后
+
+确定了 action 类型后，**加载 `skills/ceta/references/components/display/Button.md`** 获取该 action 类型的完整配置规范（参数、嵌套 successAction、Variable Pattern 等）。
+
+本文件只负责从 HTML 识别出"这个按钮应该是什么 action 类型"以及"目标是谁"，
+具体怎么配置 action JSON 由 Button.md 定义。
+
+**如果无法确定交互目标，在 analysis.json 的 `navigationHints` 中记录，供用户确认。**
+
+#### Modal/Dialog 弹窗元素识别
+
+HTML 中的 modal/dialog 不是独立的 CETA 组件，而是 Button `dialog` action 的内容载体。
+识别到弹窗后，需要：1) 关联触发按钮 2) 判断弹窗内容归属 3) 按 Button.md 的 dialog 规范配置 action。
+
+##### HTML 中 modal 的典型特征
+
+| HTML 特征 | 说明 |
+|-----------|------|
+| `.modal` / `.ant-modal` / `role="dialog"` | 弹窗容器 |
+| `data-bs-toggle="modal"` / `data-target="#id"` | 按钮-弹窗关联 |
+| `display: none` 的 `<div>` 内含表单/内容 | 隐藏的弹窗内容区 |
+| 弹窗内有"确定"/"取消"按钮对 | 弹窗底部操作栏 |
+
+##### 按钮与弹窗的关联方式
+
+1. **显式关联**：`data-target="#modalId"` / `aria-controls="modalId"`
+2. **位置关联**：弹窗紧跟在触发按钮后面
+3. **语义关联**：按钮文本与弹窗标题对应
+
+##### 弹窗内容的拆分归属
+
+弹窗内容仍遵循 FormEntity vs Page 的判断规则：
+
+| 弹窗内容 | 归属 |
+|---------|------|
+| 含输入字段 + 提交（数据存库） | 生成独立 FormEntity |
+| 含交互内容（不存库） | 生成独立 Page（标注 `usage: "dialog"`） |
+| 确认提示（"确定要XX吗？"） | 不生成文件，触发按钮用 `confirm` action |
+
+弹窗内容的 Page/FormEntity 在 analysis.json 中标注 `"usage": "dialog"`，不在菜单中显示。
+
+**弹窗的具体 action 配置（openFormProps、openDialogProps 等）见 Button.md 的 dialog 章节。**
+
 ### Text 文本
 
 ```
@@ -243,19 +328,21 @@ HTML class: .form-renderer-default-button
 ### 核心原则
 
 1. **不要丢弃样式**：HTML 中的 inline style 和可推断的视觉样式都应映射到 JSON
-2. **区分位置**：布局属性（flex、grid 参数）放 `componentProps` 顶层，视觉样式放 `componentProps.style`，外层间距放 `style`
+2. **区分位置**：布局属性（flex、grid 参数）放 `componentProps` 顶层，视觉样式（background、padding、border 等）放外层 `style`（Card 除外，Card 用 `componentProps.style`）
 3. **属性名转换**：CSS kebab-case → JSON camelCase（如 `background-color` → `backgroundColor`）
 4. **值转换**：纯 px 数字去单位变数字，其他保留字符串
 
 ### 快速参考
 
-| 组件 | 布局属性位置 | 视觉样式位置 | 外层间距位置 |
-|------|------------|------------|------------|
-| Stack | `componentProps.{flexDirection,gap,...}` | `componentProps.style` | `style` |
-| Grid | `componentProps.{colNumber,columnGap,...}` | `componentProps.style` | `style` |
-| Card | `componentProps.{title,...}` | `componentProps.style` + `titleStyle` + `contentStyle` 等 | `style` |
-| Box | 无 | `componentProps.style` | `style` |
-| 输入组件 | 无 | `componentProps.style`（控件本身） | `style`（外层 wrapper） |
+| 组件 | 布局属性位置 | 视觉样式位置 | 说明 |
+|------|------------|------------|------|
+| Stack | `componentProps.{flexDirection,gap,...}` | `style` | 所有视觉样式放外层 style |
+| Grid | `componentProps.{colNumber,columnGap,...}` | `style` | 所有视觉样式放外层 style |
+| Card | `componentProps.{title,...}` | `componentProps.style` + `titleStyle` + `contentStyle` 等 | Card 是特例，用 componentProps 内的样式插槽 |
+| Box | 无 | `style` | 所有视觉样式放外层 style |
+| Text | 无 | `style` | fontSize/fontWeight/color 等全放 style |
+| Button | 无 | `style` | background/color/fontWeight 等全放 style |
+| 输入组件 | 无 | `componentProps.style`（控件本身） + `style`（外层 wrapper 尺寸） | 输入控件样式放 componentProps.style |
 
 ---
 
@@ -294,3 +381,44 @@ HTML: .form-renderer > .card-layout > .icp-ag-table
 ```
 
 Table 外层 Card 和 Table 自身都需要 `style: { "height": "100%" }`。
+
+---
+
+## 九、组件拆解原则（通用规则）
+
+### 最高原则：忠实还原 HTML
+
+**HTML 中的每个可见标签都必须对应一个独立的 CETA 组件节点。不要合并、省略或替换。**
+
+- 两个 `<span>` 就是两个 Text，即使文本内容相关也不能合并
+- 一个 `<button>` 就是一个 Button，不能因为"不需要"而省略
+- 一个普通 `<span>` 就是 Text，不能自作主张改成 Box + Text 圆形徽章
+- HTML 中的颜色（Tailwind 解析值、inline style 值）必须原样写入 JSON，不能替换为项目主色
+
+### 核心原则
+
+**HTML 中每个视觉上独立的元素，在 JSON 中都必须是一个独立的组件节点。**
+
+判断方法：**看 HTML 源码中有几个独立的标签，就生成几个组件。** 不要根据"业务语义"或"视觉效果"做合并/省略/替换。
+
+### 拆解流程
+
+1. 识别页面中所有可见的文本片段 → 每个是一个 `Text`
+2. 识别所有输入控件 → 每个是对应的输入组件
+3. 识别所有按钮 → 每个是一个 `Button`
+4. 识别所有装饰性容器（有背景色/边框/圆角的 div） → `Box` 或 `Card`
+5. 确定容器之间的排列关系 → 纵向用 `Stack(column)`，横向用 `Stack(row)`，多列用 `Grid`
+
+### 布局组件选择
+
+| 子元素排列关系 | 组件 | 关键属性 |
+|--------------|------|---------|
+| 纵向堆叠 | Stack | `flexDirection: "column"` |
+| 横向并排 | Stack | `flexDirection: "row"` |
+| 多列等宽/按比例 | Grid | `colNumber` + `span` |
+| 有标题的分组 | Card | `title` |
+| 纯装饰容器 | Box | 靠 `style` 实现视觉效果 |
+
+### 参考模板
+
+`templates/css/` 和 `templates/htmlToJson/` 目录下有真实项目的 HTML→JSON 映射示例，可作为参考。

@@ -3,7 +3,7 @@ name: ceta-form
 description: >
   CETA 表单设计与管理。用于创建、修改表单结构（FormEntity），
   配置字段（Field）和表单布局（Layout）。
-  同时支持从 HTML 或自然语言描述生成表单布局 schemaJson 和字段定义。
+  定义 Layout schemaJson 的结构规范和字段定义 JSON 的生成规则。
   当任务涉及数据模型和表单操作时使用。
 license: MIT
 metadata:
@@ -12,7 +12,7 @@ metadata:
       env: ["CETA_API_BASE", "CETA_API_TOKEN"]
     version: "1.0.0"
     author: "CETA Team"
-    tags: ["form", "ceta", "low-code", "schema", "conversion"]
+    tags: ["form", "ceta", "low-code", "schema"]
     source: "builtin"
     dependencies:
       - "ceta/ceta-api"
@@ -25,11 +25,20 @@ metadata:
 ## 概述
 
 FormEntity 是 CETA 的数据模型，包含字段定义（Fields）和表单布局（Layouts）。
-一个 FormEntity 属于一个 PBC。
+一个 FormEntity 属于一个 PBC，对应一张数据库表。
 
-本 SKILL 同时负责：
-1. 通过 MCP API 创建/修改/删除表单资源
-2. 从 HTML 或自然语言描述生成 Layout schemaJson 和字段定义 JSON
+FormEntity 的 Layout schemaJson 可以包含任意组件：
+- 输入控件（Input、Select 等）— `id` 映射为数据库字段
+- 展示控件（Table、Text、Button、Image 等）— 不映射字段，纯 UI
+- 布局控件（Card、Grid、Stack、Collapse 等）— 组织结构
+
+本 SKILL 负责：
+1. 定义 FormEntity 的数据模型、字段类型和 Layout schemaJson 结构规范
+2. 通过 MCP API 创建/修改/删除表单资源
+3. 生成 Layout schemaJson 和字段定义 JSON 文件（供 assemble → import 流程使用）
+
+本 SKILL 不关心输入来源（HTML、图片、需求文档等），只关心最终的 CETA JSON 输出规范。
+输入源的解析和字段提取由上游 SKILL（如 ceta-html-analyzer）完成后，将结构化数据传递给本 SKILL 生成 JSON。
 
 ## 数据模型
 
@@ -131,34 +140,39 @@ Layout
 5. 调用 `form__form_entity__get` 验证
 
 
-## HTML / 自然语言 → schemaJson 转换
+## 生成 schemaJson 和字段定义
 
-当输入是 HTML 或自然语言描述时，本 SKILL 负责生成：
-1. **Layout schemaJson** → 写入 `ceta-workspace/{业务名称}/{业务名称}-form.json`
-2. **字段定义列表** → 写入 `ceta-workspace/{业务名称}/{业务名称}-fields.json`
+本 SKILL 负责根据结构化的字段信息生成：
+1. **Layout schemaJson** → 写入 `ceta-workspace/{project}/{pbcs}/{pbc}/{entity}-form.json`
+
+字段定义信息记录在 analysis.json 中，由 assemble 脚本从 analysis.json 提取，不再单独生成 fields.json 文件。
+
+输入可以来自任何上游 SKILL（HTML 分析器、图片分析器、需求文档分析器等），
+只要提供了结构化的字段清单（token、label、type、required），本 SKILL 就能生成对应的 JSON。
+
+当由 html-analyzer 调度时，HTML 原文仍在上下文中，样式可以直接从 HTML 提取并写入 JSON。
+样式写法规范见 `schema-rules.md` 的「CETA 组件样式规范」章节。
 
 ### 需要读取的参考文档
 
 | 什么时候读     | 读什么                                                                                                          |
 | -------------- | --------------------------------------------------------------------------------------------------------------- |
-| 每次都读       | `skills/ceta/references/schema-rules.md`                                                                        |
-| 输入是 HTML 时 | `skills/ceta/references/html-mapping-rules.md`                                                                   |
-| 输入含样式时   | `skills/ceta/references/style-mapping-rules.md`                                                                  |
+| 每次都读       | `skills/ceta/references/schema-rules.md`（含组件样式规范章节）                                                  |
 | 遇到具体组件时 | `skills/ceta/references/components/input/{组件名}.md` 或 `skills/ceta/references/components/layout/{组件名}.md` |
 
-### 转换流程
+### 生成流程
 
 #### 1. 确定布局模式
 
-| 输入特征               | 布局模式      | JSON 结构                                                       |
+| 字段特征               | 布局模式      | JSON 结构                                                       |
 | ---------------------- | ------------- | --------------------------------------------------------------- |
 | 字段少（≤6个），无分组 | 简单平铺      | `{ form, fields: [输入组件...] }`                               |
 | 字段有明确分组标题     | Card 分组     | `{ form, fields: [Card > Grid > 输入组件] }`                    |
 | 字段多且有多个业务分组 | Collapse 折叠 | `{ form, fields: [Card > Collapse > items > Grid > 输入组件] }` |
 
-#### 2. 提取字段
+#### 2. 构造字段
 
-- 从输入中提取每个字段的 id（camelCase）、title、组件类型
+- 每个字段需要 id（camelCase）、title、组件类型
 - 根据组件类型读取对应的组件文档确认 JSON 结构
 - 多列布局用 Grid（通常 `colNumber: 2, blankChildPlace: false`）
 
@@ -296,16 +310,16 @@ type 值参照 `ceta-basic` 中的"字段类型映射"表。
 - Layout 的 schemaJson 是 JSON 字符串，不是 JSON 对象
 - FormEntity 的 boolean 类字段（isInnerEntity, isMasterData, isAutoLock, isDeletableWhenReferenced, standalone 等）在 seed data 中必须用 int（0/1），不能用 true/false
 - Field 的 autoLock 和 forbidToUpdate 是 boolean（true/false）
-- 遇到无法映射的 HTML 结构，用 `Text` 组件兜底并告知用户
+- 遇到无法映射的组件结构，用 `Text` 组件兜底并告知用户
 - 输出文件使用格式化 JSON（2 空格缩进）
 
 ### 输出文件的用途（重要）
 
-生成的 `-form.json` 和 `-fields.json` 是**中间产物**，不要直接通过 MCP API 创建到平台。
+生成的 `-form.json` 是**中间产物**，不要直接通过 MCP API 创建到平台。
 
 正确流程：
-1. 本 SKILL 生成 `{entity}-form.json` 和 `{entity}-fields.json` 到 `ceta-workspace/` 目录
-2. 由 `ceta_sync.sh assemble-pbc` 将这些文件拼装为 `pbc-seed-data.json`
+1. 本 SKILL 生成 `{entity}-form.json` 到 `ceta-workspace/` 目录
+2. 由 `ceta_sync.sh assemble-pbc` 将这些文件拼装为 `pbc-seed-data.json`（字段定义从 analysis.json 提取）
 3. 由 `ceta_sync.sh import-pbc` 统一导入到 CETA 平台
 
 **禁止**对包含复杂 schemaJson 的表单直接调用 `form__form_entity_layout__create` 创建布局。

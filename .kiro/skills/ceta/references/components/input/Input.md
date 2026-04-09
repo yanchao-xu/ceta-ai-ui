@@ -9,7 +9,17 @@ Field type: `TEXT_BOX`
   "component": "Input",
   "id": "username",
   "title": "用户名",
-  "validation": { "required": true, "maxLength": 200 }
+  "validation": { "required": true, "maxLength": 200 },
+  "componentProps": {
+    "placeholder": "请输入用户名",
+    "style": {
+      "background": "#F8FAFC",
+      "border": "2px solid #E2E8F0",
+      "borderRadius": 12,
+      "fontSize": 16
+    }
+  },
+  "style": { "width": "50%" }
 }
 ```
 
@@ -21,6 +31,41 @@ Field type: `TEXT_BOX`
 | disabled | boolean | 是否禁用 |
 | addonBefore | string | 前缀文本 |
 | addonAfter | string | 后缀文本 |
+| style | object | 输入框本身的样式（背景、边框、圆角、字号等） |
+
+## 样式规则
+
+Input 有两个样式位置，作用不同：
+
+| 样式目标 | 放在哪里 | 说明 |
+|---------|---------|------|
+| 输入框本身（背景、边框、圆角、字号、字体） | `componentProps.style` | 控件内部样式 |
+| 外层容器（宽度、margin） | `style`（组件根层） | 外层 wrapper |
+
+### 高级样式：大号等宽输入框
+
+适用于编号、代码类输入（如 RLOC、航班号）：
+
+```json
+{
+  "component": "Input",
+  "id": "rloc",
+  "title": "参考编号",
+  "componentProps": {
+    "placeholder": "例如: QPERBI",
+    "style": {
+      "background": "#F8FAFC",
+      "border": "2px solid #E2E8F0",
+      "borderRadius": 12,
+      "padding": "20px 24px",
+      "fontSize": 24,
+      "fontFamily": "monospace",
+      "letterSpacing": "0.15em",
+      "textTransform": "uppercase"
+    }
+  }
+}
+```
 
 ## HTML 识别
 

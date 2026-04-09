@@ -2,7 +2,7 @@
 name: ceta-page
 description: >
   CETA 页面配置管理。FormEntityPage 定义列表页、详情页、仪表盘等页面的 UI 结构。
-  同时支持从 HTML 或自然语言描述生成列表页 schemaJson。
+  定义列表页 schemaJson 的结构规范和 Table 组件的配置规则。
   页面通过 schemaJson 中的 fields 数组定义 UI 组件树。
   列表页核心组件是 Table，需要包含 ACTION_COLUMN 定义操作按钮。
 license: MIT
@@ -12,7 +12,7 @@ metadata:
       env: ["CETA_API_BASE", "CETA_API_TOKEN"]
     version: "1.0.0"
     author: "CETA Team"
-    tags: ["page", "ceta", "ui", "table", "schema", "conversion"]
+    tags: ["page", "ceta", "ui", "table", "schema"]
     source: "builtin"
     dependencies:
       - "ceta/ceta-api"
@@ -27,9 +27,13 @@ metadata:
 FormEntityPage 定义 CETA 平台上的页面配置，包括列表页、详情页、仪表盘等。
 页面通过 schemaJson 描述 UI 结构，通过 schemaId 在 PBC 的 routesJson 中引用。
 
-本 SKILL 同时负责：
-1. 通过 MCP API 创建/修改/删除页面资源
-2. 从 HTML 或自然语言描述生成列表页 schemaJson
+本 SKILL 负责：
+1. 定义 FormEntityPage 的数据模型和列表页 schemaJson 结构规范
+2. 通过 MCP API 创建/修改/删除页面资源
+3. 生成列表页 schemaJson 文件（供 assemble → import 流程使用）
+
+本 SKILL 不关心输入来源（HTML、图片、需求文档等），只关心最终的 CETA JSON 输出规范。
+输入源的解析和列定义提取由上游 SKILL（如 ceta-html-analyzer）完成后，将结构化数据传递给本 SKILL 生成 JSON。
 
 ## 数据模型
 
@@ -53,26 +57,30 @@ FormEntityPage
 - `form__form_entity_page__update` — 更新页面
 - `form__form_entity_page__delete` — 删除页面
 
-## HTML / 自然语言 → schemaJson 转换
+## 生成列表页 schemaJson
 
-当输入是 HTML 或自然语言描述时，本 SKILL 负责生成：
+本 SKILL 负责根据结构化的列定义信息生成：
 
-**FormEntityPage schemaJson** → 写入 `ceta-workspace/{业务名称}/{业务名称}-page.json`
+**FormEntityPage schemaJson** → 写入 `ceta-workspace/{project}/{pbcs}/{pbc}/{page}-page.json`
+
+输入可以来自任何上游 SKILL（HTML 分析器、图片分析器、需求文档分析器等），
+只要提供了结构化的列定义（列名、字段 token、数据类型、关联 FormEntity），本 SKILL 就能生成对应的 JSON。
+
+当由 html-analyzer 调度时，HTML 原文仍在上下文中，样式可以直接从 HTML 提取并写入 JSON。
+样式写法规范见 `schema-rules.md` 的「CETA 组件样式规范」章节。
 
 ### 需要读取的参考文档
 
-| 什么时候读     | 读什么                                          |
-| -------------- | ----------------------------------------------- |
-| 每次都读       | `skills/ceta/references/schema-rules.md`        |
-| 输入是 HTML 时 | `skills/ceta/references/html-mapping-rules.md`  |
-| 输入含样式时   | `skills/ceta/references/style-mapping-rules.md` |
-| Table 结构详情 | `skills/ceta/references/components/display/Table.md` |
+| 什么时候读     | 读什么                                                       |
+| -------------- | ------------------------------------------------------------ |
+| 每次都读       | `skills/ceta/references/schema-rules.md`（含组件样式规范章节）|
+| Table 结构详情 | `skills/ceta/references/components/display/Table.md`         |
 
-### 转换流程
+### 生成流程
 
-#### 1. 提取列表信息
+#### 1. 确定列信息
 
-从输入中提取：
+需要以下结构化数据：
 - 页面标题
 - 表格列（列名、字段 token、数据类型）
 - 操作按钮（编辑、查看、删除）
@@ -344,7 +352,7 @@ Card 和 Table 都需要 `style: { "height": "100%" }`。
 - Table 的 columnDefs 必须包含 ACTION_COLUMN 才有操作按钮
 - **创建页面后必须完成三步才能在前端看到：1) 更新 PBC routesJson 2) 更新 PBC config 3) 更新项目 frontEndConfig 的 navbar**
 - Table 和 Card 都需要 `style: { "height": "100%" }` 才能正确撑满页面
-- 遇到无法映射的 HTML 结构，用 `Text` 组件兜底并告知用户
+- 遇到无法映射的组件结构，用 `Text` 组件兜底并告知用户
 - 输出文件使用格式化 JSON（2 空格缩进）
 
 ### 输出文件的用途（重要）

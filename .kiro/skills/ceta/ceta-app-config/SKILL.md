@@ -411,7 +411,7 @@ CSS class 命名规范：
 
 ### AI 生成菜单的自动化规则
 
-当 HTML 转换流程完成后（已生成 form.json、page.json、fields.json），本 SKILL 根据 `analysis.json` 中的信息自动生成菜单：
+当 HTML 转换流程完成后（已生成 form.json、page.json），本 SKILL 根据 `analysis.json` 中的信息自动生成菜单：
 
 #### 规则 1：每个有列表页的 FormEntity 生成一个菜单项
 
