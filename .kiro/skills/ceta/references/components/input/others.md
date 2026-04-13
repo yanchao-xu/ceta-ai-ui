@@ -36,8 +36,8 @@ Field type: `DATE`
 }
 ```
 
-| 属性 | 类型 | 说明 |
-|------|------|------|
+| 属性     | 类型              | 说明         |
+| -------- | ----------------- | ------------ |
 | showTime | boolean \| object | 是否显示时间 |
 
 透传给 Ant Design [DatePicker.RangePicker](https://ant.design/components/date-picker#components-date-picker-demo-range-picker)。
@@ -158,33 +158,31 @@ Field type: `FORMULA`
 }
 ```
 
----
-
 ## 完整输入组件清单
 
-| component | Field type | 独立文档 |
-|-----------|-----------|---------|
-| Input | TEXT_BOX | ✔️ Input.md |
-| Textarea | TEXTAREA | ✔️ Textarea.md |
-| NumberPicker | NUMBER | ✔️ NumberPicker.md |
-| Select | SELECT | ✔️ Select.md |
-| DatePicker | DATE | ✔️ DatePicker.md |
-| Switch | SWITCH | ✔️ Switch.md |
-| Upload | UPLOAD | ✔️ Upload.md |
-| Radio | RADIO | ✔️ Radio.md |
-| Checkbox | CHECKBOX | ✔️ Checkbox.md |
-| Cascader | CASCADER | ✔️ Cascader.md |
-| RichText | RICH_TEXT | ✔️ RichText.md |
-| ACL | ACL | ✔️ ACL.md |
-| Rate | RATE | ✔️ Rate.md |
-| EditableTable | EDITABLE_GRID | ✔️ EditableTable.md |
-| Password | PASSWORD | 本文件 |
-| DateRangePicker | DATE | 本文件 |
-| TimePicker | TIME | 本文件 |
-| TimeRangePicker | — | 本文件 |
-| TreeSelect | TREE_SELECT | 本文件 |
-| Slider | — | 本文件 |
-| NumericPicker | NUMERIC | 本文件 |
-| Formula | FORMULA | 本文件 |
-| CodeEditor | — | 本文件 |
-| OrgTree | — | 本文件 |
+| component       | Field type    | 独立文档            |
+| --------------- | ------------- | ------------------- |
+| Input           | TEXT_BOX      | ✔️ Input.md         |
+| Textarea        | TEXTAREA      | ✔️ Textarea.md      |
+| NumberPicker    | NUMBER        | ✔️ NumberPicker.md  |
+| Select          | SELECT        | ✔️ Select.md        |
+| DatePicker      | DATE          | ✔️ DatePicker.md    |
+| Switch          | SWITCH        | ✔️ Switch.md        |
+| Upload          | UPLOAD        | ✔️ Upload.md        |
+| Radio           | RADIO         | ✔️ Radio.md         |
+| Checkbox        | CHECKBOX      | ✔️ Checkbox.md      |
+| Cascader        | CASCADER      | ✔️ Cascader.md      |
+| RichText        | RICH_TEXT     | ✔️ RichText.md      |
+| ACL             | ACL           | ✔️ ACL.md           |
+| Rate            | RATE          | ✔️ Rate.md          |
+| EditableTable   | EDITABLE_GRID | ✔️ EditableTable.md |
+| Password        | PASSWORD      | 本文件              |
+| DateRangePicker | DATE          | 本文件              |
+| TimePicker      | TIME          | 本文件              |
+| TimeRangePicker | —             | 本文件              |
+| TreeSelect      | TREE_SELECT   | 本文件              |
+| Slider          | —             | 本文件              |
+| NumericPicker   | NUMERIC       | 本文件              |
+| Formula         | FORMULA       | 本文件              |
+| CodeEditor      | —             | 本文件              |
+| OrgTree         | —             | 本文件              |

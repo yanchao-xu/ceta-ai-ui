@@ -26,6 +26,23 @@
 | Join | JOIN | 关联 |
 | Workflow | WORKFLOW | 工作流 |
 
+## 校验属性（validation）
+
+不同组件支持的 validation 属性：
+
+| component | required | maxLength | regex | minValue | maxValue |
+|-----------|----------|-----------|-------|----------|----------|
+| Input | ✅ | ✅ | ✅ | — | — |
+| Textarea | ✅ | ✅ | — | — | — |
+| NumberPicker | ✅ | — | — | ✅ | ✅ |
+| DatePicker | ✅ | — | — | — | — |
+| Select | ✅ | — | — | — | — |
+| Radio | ✅ | — | — | — | — |
+| Checkbox | ✅ | — | — | — | — |
+| Upload | ✅ | — | — | — | — |
+| ACL | ✅ | — | — | — | — |
+| Switch | — | — | — | — | — |
+
 ## 组件名新旧对照
 
 统一使用新版组件名：
