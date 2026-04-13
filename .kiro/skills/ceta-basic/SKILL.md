@@ -1,184 +1,110 @@
 ---
 name: ceta-basic
 description: >
-  CETA 低代码平台 schemaJson 生成入口。提供平台上下文、数据模型概述和 SKILL 导航。
-  所有 CETA schemaJson 生成任务都应首先加载此 SKILL。
-  不负责调用 API 创建资源，只负责生成 JSON 结构。
-inclusion: auto
+  CETA 低代码平台基础入口。提供平台上下文、SKILL 关系导航和通用约定。
+  所有 CETA 相关任务都应首先加载此 SKILL。
+license: MIT
 metadata:
-  version: "1.0.0"
-  tags: ["ceta", "platform", "entry-point", "schema"]
-  layer: "entry"
+  openclaw:
+    requires:
+      env: ["CETA_API_BASE", "CETA_API_TOKEN"]
+    version: "1.0.0"
+    author: "CETA Team"
+    tags: ["ceta", "platform", "entry-point"]
+    layer: "entry"
 ---
 
 # CETA 低代码平台
 
 ## 平台概述
 
-CETA 是一个企业级低代码开发平台，提供三大引擎：
-
-- 表单引擎 — 通过 JSON 配置设计和渲染表单
-- 流程引擎 — 设计和渲染工作流/审批流
-- 仪表盘引擎 — 设计和渲染数据仪表盘
-
-用户通过配置表单、工作流、页面和数据源来构建业务应用，无需编写代码。
-
-## 核心数据模型
+CETA 是一个企业级低代码开发平台。平台的核心数据模型是层级结构：
 
 ```
 Project（项目/应用）
-└── PBC（业务组件，功能模块的最小发布单元）
-    ├── FormEntity（表单实体）
-    │   ├── fields（字段定义）
-    │   └── layouts（表单布局，含 schemaJson）
-    ├── FormEntityPage（页面配置，含 schemaJson）
-    ├── FlowDefinition（工作流定义）
-    ├── Permission（权限定义）
-    ├── routesJson（前端路由配置）
-    └── config（菜单配置）
+├── frontEndConfig（前端配置）
+│   └── config
+│       ├── appConfig（主题、模板、i18n 等）
+│       └── routers（全局路由：desktop / mobile）
+├── sdkDefinitionList（SDK 定义：可复用的脚本/函数）
+├── connectorTypeV2List（连接器类型：外部系统集成定义）
+├── actionList（动作定义：连接器的具体操作）
+└── pbcList（业务组件列表）
+    └── PBC（业务组件，功能模块的最小发布单元）
+        ├── formEntityList（表单实体列表）
+        │   └── FormEntity
+        │       ├── fields（字段定义）
+        │       └── layouts（表单布局，含 schemaJson）
+        ├── formEntityPageList（页面配置列表）
+        ├── flowDefinitionList（工作流定义列表）
+        ├── permissionList（权限定义列表）
+        ├── formDashboardLayoutList（仪表盘布局列表）
+        ├── uiPluginList（UI 插件列表）
+        ├── routesJson（PBC 级前端路由配置）
+        └── config（PBC 级菜单配置）
 ```
 
 ### 核心概念
 
-| 概念           | 说明                                 | 标识方式                     |
-| -------------- | ------------------------------------ | ---------------------------- |
-| Project        | 顶层应用容器                         | projectId / projectToken     |
-| PBC            | 业务组件，功能模块的最小发布单元     | pbcId / pbcToken             |
-| FormEntity     | 数据模型（表单），定义字段和布局     | formEntityId / token         |
-| Field          | 表单字段                             | fieldId / token（camelCase） |
-| Layout         | 表单的不同视图（新建、编辑、查看等） | layoutId / token             |
-| FormEntityPage | 页面配置（列表页、详情页等）         | pageId / schemaId            |
-| FlowDefinition | 工作流定义                           | flowDefinitionId / token     |
+| 概念 | 说明 | 标识方式 |
+|------|------|----------|
+| Project | 顶层应用容器 | projectId / projectToken |
+| frontEndConfig | 前端全局配置（主题、路由） | projectId |
+| sdkDefinition | 可复用的脚本/函数定义 | uuid / name |
+| connectorType | 连接器类型（如 PostgreSQL、S3） | uuid / name |
+| action | 连接器的具体操作 | uuid / identifier |
+| PBC | 业务组件，功能模块的最小发布单元 | pbcId / pbcToken |
+| FormEntity | 数据模型（表单），定义字段和布局 | formEntityId / token |
+| Layout | 表单的不同视图（新建、编辑、查看等） | layoutId / token |
+| FormEntityPage | 页面配置（列表页、详情页等） | pageId / schemaId |
+| FlowDefinition | 工作流定义（嵌套在 PBC 内） | flowDefinitionId / token |
+| Permission | 权限定义（CRUD 操作权限） | permissionId / token |
 
 ### 标识符约定
 
+CETA 中大多数资源同时有 `id`（数字）和 `token`（字符串）两种标识：
 - `id` 是数据库自增主键
 - `token` 是业务标识符，跨环境稳定，推荐使用
+- API 路径中 v2 版本通常使用 `{pbcToken}/{entityToken}` 格式
 - token 使用 kebab-case（如 `user-management`、`leave-application`）
 - 字段 token 使用 camelCase（如 `userName`、`birthDate`）
-
----
-
-## schemaJson 概述
-
-CETA 平台的 UI 结构通过 schemaJson 描述，统一使用 `{ form, fields }` 结构：
-
-```json
-{
-  "form": { ... },
-  "fields": [ ... ]
-}
-```
-
-schemaJson 有两种用途：
-
-- **表单布局**（Layout schemaJson）— 用于 FormEntity 的 Layout，描述新建/编辑/查看表单的 UI
-- **列表页**（FormEntityPage schemaJson）— 用于 FormEntityPage，描述列表页、仪表盘等页面的 UI
-
-schemaJson 最终在平台中存储为 JSON 字符串（`JSON.stringify`），但生成时输出为格式化的 JSON 对象（2 空格缩进）。
-
----
 
 ## SKILL 导航
 
 根据任务类型，按需加载对应的 SKILL。不要一次性全部加载。
 
-| 需要做什么              | 加载哪个 SKILL                              |
-| ----------------------- | ------------------------------------------- |
-| 分析复杂 HTML 结构并拆分 | `skills/ceta/ceta-html-analyzer/SKILL.md`   |
-| 生成表单布局 schemaJson | `skills/ceta/ceta-form/SKILL.md`            |
-| 生成列表页 schemaJson   | `skills/ceta/ceta-page/SKILL.md`            |
-| 生成应用配置（菜单+主题+路由） | `skills/ceta/ceta-app-config/SKILL.md` |
+| 需要做什么 | 加载哪个 SKILL |
+|-----------|---------------|
+| 管理项目/应用 | `skills/ceta/ceta-project/SKILL.md` |
+| 管理 PBC（业务组件） | `skills/ceta/ceta-pbc/SKILL.md` |
+| 创建/修改表单和字段 | `skills/ceta/ceta-form/SKILL.md` |
+| 设计流程/审批流 | `skills/ceta/ceta-flow/SKILL.md` |
+| 构建页面/列表/仪表盘 | `skills/ceta/ceta-page/SKILL.md` |
+| 配置菜单/主题/路由 | `skills/ceta/ceta-app-config/SKILL.md` |
+| 配置事件/触发器 | `skills/ceta/ceta-event/SKILL.md` |
+| 集成外部系统（连接器） | `skills/ceta/ceta-connector/SKILL.md` |
+| 通用 API 调用 / Seed Data | `skills/ceta/ceta-api/SKILL.md` |
 
-### 判断规则
+#### 输入源分析器（Input Source Analyzers）
 
-**HTML 结构分析**（优先判断） — 满足任一条件时，先加载 `ceta-html-analyzer`：
+以下 SKILL 负责将不同格式的输入解析为结构化数据，再调度上面的核心 SKILL 生成 CETA JSON。
+核心 SKILL（ceta-form、ceta-page 等）不关心输入来源，只关心 CETA JSON 的纯粹定义。
 
-- HTML 包含导航栏（`<nav>`）或侧边栏菜单（`<aside>`），暗示是完整应用或模块
-- HTML 包含 2 个以上独立的 `<form>` 或 `<table>`，暗示是 PBC 级别
-- HTML 结构复杂，包含多个业务区域（如多个卡片/Tab 切换不同内容）
-- 用户说"分析这个 HTML"、"拆分"、"转成 CETA 配置"
+| 输入来源 | 加载哪个 SKILL | 状态 |
+|---------|---------------|------|
+| HTML 原型/页面 | `skills/ceta-html-analyzer/SKILL.md` | ✅ 可用 |
+| 设计图片/截图 | `skills/ceta-image-analyzer/SKILL.md` | 🔜 规划中 |
+| 需求文档/PRD | `skills/ceta-doc-analyzer/SKILL.md` | 🔜 规划中 |
 
-html-analyzer 会分析范围（项目/PBC/单页面），拆分结构后再调度下面的子 SKILL。
+### 参考资料
 
-**表单布局** — 满足任一条件（且 HTML 结构简单，无需 html-analyzer）：
+| 资料 | 路径 |
+|------|------|
+| 项目级 seed data 示例 | `seed-data-examples/secret-base-project-seed-data.json` |
+| PBC 级 seed data 示例 | `seed-data-examples/user-management-new-pbc.json` |
+| frontEndConfig 模板 | `skills/ceta/ceta-project/references/frontend-config-template.json` |
+| 列表页模板 | `skills/ceta/ceta-page/references/list-page-template.json` |
 
-- 输入中包含 `<form>` 标签或多个输入字段（`<input>`、`<select>`、`<textarea>` 等）
-- CETA 原生 HTML 中有 `.input-element`、`.select-element`、`.date-picker-element` 等
-- 自然语言提到：表单、新建、编辑、查看、填写、录入、申请表
-
-**列表页** — 满足任一条件：
-
-- 输入中包含 `<table>` 标签
-- CETA 原生 HTML 中有 `.icp-ag-table`、`.ag-theme-quartz`
-- 自然语言提到：列表、管理页、数据表、查询页、Table
-
-**混合页面** — 同时包含表单和列表元素时，分别加载两个 SKILL 生成对应的 JSON。
-
-### 后续扩展（规划中）
-
-| 输出目标                 | 子 SKILL               | 状态   |
-| ------------------------ | ---------------------- | ------ |
-| 应用配置（菜单+主题+路由） | `ceta/ceta-app-config` | 可用   |
-| 完整 PBC Seed Data       | `ceta/ceta-pbc`        | 规划中 |
-
----
-
-## 输入类型识别
-
-用户的输入分三种来源：
-
-| 来源           | 识别特征                                                                                                                      |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| CETA 原生 HTML | 根元素 class 含 `form-renderer`，子元素含 `card-layout`、`grid-layout`、`collapse-element`、`icp-ag-table` 等 CETA 专有 class |
-| 普通 HTML      | 标准 HTML 标签（`<form>`、`<table>`、`<input>`、`<select>` 等），不含 CETA 专有 class                                         |
-| 自然语言       | 中文或英文描述，如"做一个用户管理的列表页"、"创建请假申请表单"                                                                |
-
----
-
-## 共享参考文档
-
-子 SKILL 在执行转换时，按需读取以下共享文档：
-
-### 通用规范
-
-| 文档                | 路径                                       | 内容                                                                      |
-| ------------------- | ------------------------------------------ | ------------------------------------------------------------------------- |
-| schemaJson 结构规范 | `skills/references/schema-rules.md`        | 顶层结构、组件节点通用字段、validation 校验、字段类型映射、组件名新旧对照 |
-| HTML 映射规则       | `skills/references/html-mapping-rules.md`  | HTML class/元素 → CETA 组件的映射规则                                     |
-| 样式映射规则        | `skills/references/style-mapping-rules.md` | HTML CSS 样式 → JSON style/componentProps.style 的映射规则                |
-
-### 组件文档（按需读取）
-
-| 目录                         | 包含组件                                          | 适用场景     |
-| ---------------------------- | ------------------------------------------------- | ------------ |
-| `skills/components/input/`   | Input、Select、DatePicker、Switch、Upload、others | 表单转换     |
-| `skills/components/layout/`  | Card、Grid、Collapse、others                      | 表单和列表页 |
-| `skills/components/display/` | Table、Tabs、Button、others                       | 列表页转换   |
-
-**按需读取**：不要一次性加载所有组件文档。根据输入中出现的组件类型，只读取需要的那几个。
-
----
-
-## 输出文件规范
-
-将生成的 JSON 写入 `output/` 目录：
-
-```
-output/
-└── {业务名称}/
-    ├── {业务名称}-form.json       # 表单布局 schemaJson
-    ├── {业务名称}-page.json       # 列表页 schemaJson
-    └── {业务名称}-fields.json     # 字段定义列表
-```
-
-### 命名规则
-
-- 业务名称使用 kebab-case（如 `user-management`、`leave-application`）
-- 如果输入是 CETA 原生 HTML 且包含 entity token，优先使用该 token
-- 如果无法确定业务名称，询问用户
-
----
 
 ## 通用约定
 
@@ -217,8 +143,186 @@ output/
 | Rate          | RATE          |
 | EditableTable | EDITABLE_GRID |
 
-### 其他约定
+### schemaJson 概述
 
-- 字段 `id` 对应 Field 的 `token`，使用 camelCase
-- 遇到无法映射的 HTML 结构，用 `Text` 组件兜底并告知用户
-- 输出文件使用格式化 JSON（2 空格缩进）
+CETA 平台的 UI 结构通过 schemaJson 描述，统一使用 `{ form, fields }` 结构：
+
+```json
+{
+  "form": { ... },
+  "fields": [ ... ]
+}
+```
+
+schemaJson 有两种用途：
+
+- **表单布局**（Layout schemaJson）— 用于 FormEntity 的 Layout，描述新建/编辑/查看表单的 UI
+- **列表页**（FormEntityPage schemaJson）— 用于 FormEntityPage，描述列表页、仪表盘等页面的 UI
+
+schemaJson 最终在平台中存储为 JSON 字符串（`JSON.stringify`），但生成时输出为格式化的 JSON 对象（2 空格缩进）。
+
+### 安全规则：先查后建，避免误覆盖
+
+**这是最重要的规则。** CETA 是多人共享的平台，操作前必须确认不会覆盖他人的数据。
+
+#### 创建资源前必须检查是否已存在
+- 创建 Project 前：调用 `form__project__get_by_token` 检查 token 是否已被占用
+- 创建 PBC 前：调用 `form__pbc__list_by_project_id` 检查同名/同 token 的 PBC 是否已存在
+- 创建 FormEntity 前：调用 `form__form_entity__list_by_pbc_id` 检查
+- 创建 FlowDefinition 前：调用 `flow__flow_definition__list` 检查
+
+#### 如果资源已存在
+- **默认行为：停止并告知用户**，说明已存在同名/同 token 的资源，询问是否要更新
+- **只有用户明确确认"更新"或"覆盖"时**，才执行 update 操作
+- **绝不自动覆盖**已有资源
+
+#### Seed Data 导入的特殊注意
+- `project_seed_data_import_json_file` 如果 targetProjectToken 指向已有项目，会覆盖该项目的配置
+- `pbc_seed_data_import_json_file` 会覆盖目标 PBC 的配置
+- `import-pbc` 会**完全覆盖**目标 PBC 的所有配置（表单、字段、布局、页面）
+- **导入前必须告知用户目标项目/PBC 已存在，并获得确认**
+- 首次创建 PBC 时可以直接导入，无需备份
+- 如果 PBC 已存在且有用户数据，导入前必须先 `export-pbc` 备份
+- 建议先用 `project_seed_data_export_json` 或 `pbc_seed_data_export_json_file` 备份现有配置
+
+### API 路径规则
+- Form 模块：`/form/api/...`（表单、PBC、项目、页面、布局）
+- Flow 模块：`/flow/api/...`（工作流、事件、数据源、连接器、seed data）
+- Connector 模块：`/connector/api/...`（连接器类型、操作定义、连接器实例）
+
+### project_token Header
+- 大多数 API 需要 `project_token` header 来确定操作的项目上下文
+- MCP Server 默认注入 `project_token: ceta`（平台级操作）
+- 操作具体项目下的资源时，需要通过 `_headers` 参数传入该项目的 token 覆盖默认值
+- 示例：`{ "projectId": 123, "_headers": { "project_token": "my-project" } }`
+- 需要 `project_token` 的典型 API：frontEndConfig 的获取和更新
+
+### API 调用规范
+- 所有 CETA API 通过 MCP 工具调用，不要直接发 HTTP 请求
+- 创建资源后必须用查询接口验证结果
+- 如果没有专用工具，使用 `ceta_http_request` 通用工具
+
+### 错误处理
+- 4xx 错误：检查参数，修正后重试
+- 5xx 错误：等待后重试，最多 3 次（MCP Server 已内置重试）
+- 401 错误：Token 无效，任务应终止
+
+### 资源创建策略（重要 — 必须遵守）
+
+创建 CETA 资源有两种方式，**必须根据场景选择正确的方式**：
+
+| 场景 | 推荐方式 | 原因 |
+|------|---------|------|
+| 修改单个字段/更新单个布局 | MCP API 逐个调用 | 改动小，API 够用 |
+| 创建完整 PBC（含多个表单+页面） | **本地生成 JSON → assemble → import-pbc** | 页面 schemaJson 通常很大，MCP API 参数会截断 |
+| 从外部输入源生成完整项目 | **本地生成 JSON → assemble → import-pbc** | 保证 schemaJson 完整性 |
+| 只创建一个简单表单（≤6字段，无复杂页面） | MCP API 逐个调用 | 数据量小，不会截断 |
+
+**核心规则：当需要创建包含复杂 schemaJson 的页面时，禁止使用 `form__form_entity_page__create` 等 MCP API 直接创建。**
+MCP 工具调用的参数有大小限制，复杂页面的 schemaJson 会被截断，导致页面渲染异常。
+
+#### 标准流程：本地生成 → assemble → import-pbc
+
+```
+1. 在 ceta-workspace/{project}/pbcs/{pbc}/ 下生成零散 JSON 文件
+   ├── {entity}-form.json     （表单布局 schemaJson）
+   └── {page}-page.json       （页面 schemaJson）
+
+2. 运行 assemble-pbc 拼装 pbc-seed-data.json
+   $ ceta_sync.sh assemble-pbc {project} {pbc}
+
+3. 修正 pbc-seed-data.json（assemble 只生成 default layout，需改为 new/edit/view）
+
+4. 运行 import-pbc 导入到平台
+   $ ceta_sync.sh import-pbc {project} {pbc}
+
+5. 更新 frontEndConfig（菜单、路由、主题）
+   通过 MCP API form__front_end_config__update 或 ceta_sync.sh update-frontend
+```
+
+详细的 assemble + import 流程 → 读取 `skills/ceta/ceta-api/SKILL.md`
+
+### 构建完整业务模块的顺序
+1. 确认/创建 Project（tags 不能为空）— MCP API
+2. 在本地 ceta-workspace/ 下生成所有 JSON 文件（form/fields/page/app-config）
+3. 运行 `assemble-pbc` 拼装 pbc-seed-data.json
+4. 修正 pbc-seed-data.json（补充 new/edit/view layout、routesJson、config）
+5. 运行 `import-pbc` 导入到平台
+6. **【必须】更新 Project 的 frontEndConfig — 配置 navbar 菜单**
+7. 创建 FlowDefinition 流程（如需审批流）— MCP API
+8. 配置权限 — MCP API
+
+### frontEndConfig 与菜单的关系（重要）
+
+CETA 的菜单系统有两层，必须都配置才能正常显示：
+
+1. **PBC 级 config** — PBC 自身的菜单元数据（routesJson + config）
+2. **项目级 frontEndConfig** — 控制前端实际渲染的全局菜单（navbar.items）
+
+**仅设置 PBC 的 config 不会让菜单出现在前端。** 必须在项目的 frontEndConfig 的 `templateConfig.navbar.items` 中注册菜单项。
+
+菜单项路径格式：`/{pbcToken}/page/{schemaId}`
+
+### 批量操作（推荐：PBC 级增量模式）
+
+日常开发只操作 PBC 级别，不要用项目级导入（会覆盖其他 PBC 的改动）。
+
+#### Workspace 目录结构
+```
+ceta-workspace/
+└── {projectToken}/
+    ├── README.md
+    ├── docs/
+    │   ├── requirements.md
+    │   ├── design.md
+    │   └── changelog.md
+    ├── project.json
+    ├── frontend-config.json
+    ├── analysis.json
+    ├── pbcs/
+    │   ├── {pbcToken1}/
+    │   │   ├── pbc-seed-data.json
+    │   │   ├── README.md
+    │   │   ├── {entity}-form.json
+    │   │   └── {page}-page.json
+    │   └── {pbcToken2}/
+    │       └── ...
+    └── project-seed-data.json
+```
+
+#### 文档约定
+
+AI 在操作项目时必须维护以下文档：
+
+1. `{projectToken}/README.md` — 项目概述，首次创建时生成
+2. `{projectToken}/docs/changelog.md` — 变更记录，每次修改时追加
+3. `{projectToken}/pbcs/{pbcToken}/README.md` — PBC 说明
+
+这些文档帮助不同 session 的 AI 快速理解项目上下文，避免重复询问。
+
+#### 首次创建项目
+```bash
+./skills/ceta/ceta-api/scripts/ceta_sync.sh init-project my-project "我的项目" "项目描述"
+./skills/ceta/ceta-api/scripts/ceta_sync.sh list-pbcs my-project
+```
+
+#### 添加业务 PBC
+```bash
+./skills/ceta/ceta-api/scripts/ceta_sync.sh import-pbc my-project leave-management
+./skills/ceta/ceta-api/scripts/ceta_sync.sh update-frontend my-project
+```
+
+#### 修改已有 PBC
+```bash
+./skills/ceta/ceta-api/scripts/ceta_sync.sh export-pbc my-project leave-management
+# 本地修改 pbc-seed-data.json
+./skills/ceta/ceta-api/scripts/ceta_sync.sh import-pbc my-project leave-management
+```
+
+#### 关于 id 和 token
+- seed data 导入按 `token` 匹配，首次创建不需要 id
+- 修改时先导出（获取系统 id），再修改，再导入
+
+#### 禁止操作
+- **不要用项目级 seed data 导入**（会覆盖所有 PBC 的改动）
+- 项目级导出只用于备份：`ceta_sync.sh backup-project`

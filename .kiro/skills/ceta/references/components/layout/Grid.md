@@ -13,11 +13,11 @@
     "rowGap": 12,
     "blankChildPlace": false,
     "alignItems": "start",
-    "justifyContent": "stretch",
-    "style": {
-      "padding": "12px",
-      "backgroundColor": "#fafafa"
-    }
+    "justifyContent": "stretch"
+  },
+  "style": {
+    "padding": 12,
+    "background": "#fafafa"
   },
   "fields": [
     { "id": "field1", "title": "字段1", "component": "Input", "span": 1 },
@@ -40,11 +40,12 @@
 | justifyContent | string | 网格整体水平对齐 | 无 |
 | alignContent | string | 网格整体垂直对齐 | 无 |
 | className | string | 自定义 class | 无 |
-| style | object | 内部样式（背景、内边距等） | 无 |
+
+注意：`componentProps` 中不放 `style`，所有视觉样式放在外层 `style`。
 
 ## 样式映射
 
-Grid 的布局参数在 `componentProps` 顶层，视觉样式在 `componentProps.style`：
+Grid 的布局参数在 `componentProps` 顶层，视觉样式在外层 `style`：
 
 | HTML CSS 属性 | 映射到 |
 |--------------|--------|
@@ -55,7 +56,7 @@ Grid 的布局参数在 `componentProps` 顶层，视觉样式在 `componentProp
 | `gap` | `componentProps.gap` |
 | `align-items` | `componentProps.alignItems` |
 | `justify-content` | `componentProps.justifyContent` |
-| `padding`, `background` 等 | `componentProps.style` |
+| `padding`, `background` 等 | `style` | 外层 style |
 | `margin` | `style`（组件根层） |
 
 子项的 `--span` CSS 变量 → 子组件的 `span` 属性。
@@ -69,3 +70,21 @@ Grid 的布局参数在 `componentProps` 顶层，视觉样式在 `componentProp
 
 - 表单中字段并排显示（最常见 `colNumber: 2`）
 - 通常嵌套在 Card 或 Collapse item 内部
+- 页面级精确布局用 `colNumber: 12`（类似 Bootstrap 12 列栅格）
+
+### 12 列精确布局
+
+用 12 列 Grid + span 实现精确的列宽控制：
+
+```json
+{
+  "component": "Grid",
+  "componentProps": { "colNumber": 12, "columnGap": 32, "rowGap": 24 },
+  "fields": [
+    { "component": "Stack", "span": 8, "componentProps": { ... }, "fields": [ ... ] },
+    { "component": "Stack", "span": 4, "componentProps": { ... }, "fields": [ ... ] }
+  ]
+}
+```
+
+比 `colNumber: 3` 更灵活，可以做 8:4、9:3、6:6 等任意比例。

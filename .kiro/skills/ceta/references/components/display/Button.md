@@ -42,6 +42,101 @@
 | suppressSuccessLinkDelay | boolean      | 默认 successAction 中的 link 有 2s 延迟，设为 true 取消延迟 |
 | successLinkDelayTime     | number       | 自定义 successAction 中 link 延迟时间(ms)，默认 2000        |
 
+## 样式规则
+
+Button 的视觉样式放在 `style`（组件根层），不是 `componentProps.style`：
+
+| 样式目标 | 放在哪里 | 示例 |
+|---------|---------|------|
+| 背景色/渐变色 | `style.background` 或 `style.backgroundColor` | 支持 `linear-gradient` |
+| 文字颜色 | `style.color` | |
+| 圆角 | `style.borderRadius` | |
+| 边框 | `style.borderColor` | |
+| 字重 | `style.fontWeight` | |
+| 宽度 | `style.width` | 如 `"100%"` 全宽按钮 |
+| 内边距 | `style.padding` | 如 `"12px 32px"` |
+
+### 渐变色按钮
+
+```json
+{
+  "component": "Button",
+  "componentProps": {
+    "content": "搜索航班",
+    "type": "primary",
+    "icon": "material:search-two-tone"
+  },
+  "style": {
+    "background": "linear-gradient(135deg, #00A8E8 0%, #00C9A7 100%)",
+    "color": "white",
+    "fontWeight": 600,
+    "padding": "12px 32px",
+    "borderRadius": 12
+  }
+}
+```
+
+### 全宽主色按钮
+
+```json
+{
+  "component": "Button",
+  "componentProps": {
+    "type": "primary",
+    "content": "下一步",
+    "action": { "type": "link", "href": "/next-page" }
+  },
+  "style": {
+    "width": "100%",
+    "backgroundColor": "#003366",
+    "borderColor": "#003366",
+    "borderRadius": 6,
+    "fontWeight": 600
+  }
+}
+```
+
+### 危险按钮（红色边框）
+
+```json
+{
+  "component": "Button",
+  "componentProps": {
+    "content": "终止",
+    "type": "default",
+    "action": { "type": "confirm", "title": "确认终止？" }
+  },
+  "style": {
+    "borderRadius": 6,
+    "color": "#ff4d4f",
+    "borderColor": "#ff4d4f"
+  }
+}
+```
+
+### 渐变色按钮（用 className）
+
+当需要 hover 效果时用 className：
+
+```json
+{
+  "component": "Button",
+  "className": "gradient-btn",
+  "componentProps": { "type": "primary", "content": "创建新PNR" }
+}
+```
+
+themeConfig.css：
+```css
+.gradient-btn {
+  background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%) !important;
+  border: none !important;
+}
+.gradient-btn:hover {
+  background: linear-gradient(135deg, #0096c7 0%, #005f8d 100%) !important;
+}
+```
+
 ---
 
 ## Action 类型详解
@@ -556,9 +651,44 @@
 | href                          | string  |         | 跳转地址，支持 Variable Pattern 和 ConditionalProperty    |
 | target                        | string  |         | HTML a 标签的 target 属性（如 `_blank` 新标签页打开）     |
 | replace                       | boolean | `false` | 是否替换当前路由历史（React Router replace）              |
-| hrefIsSiteBased               | boolean | `false` | 为 false 时，PBC 下的链接自动拼接 PBC token 作为 basename |
+| hrefIsSiteBased               | boolean | `false` | 是否为站点级跳转（跨 PBC）。详见下方 hrefIsSiteBased 说明 |
 | suppressBasePath              | boolean | `false` | 是否跳过 React Router 的 base path 拼接                   |
 | suppressInheritIncludeDeleted | boolean | `false` | 是否禁止自动继承当前页面 URL 中的 `include_deleted` 参数  |
+
+#### hrefIsSiteBased 跨 PBC 跳转说明
+
+`hrefIsSiteBased` 控制链接是在当前 PBC 内部跳转还是跨 PBC 跳转到其他模块的页面/表单。
+
+- **`hrefIsSiteBased: false`（默认）** — PBC 内部跳转，`href` 不需要带 PBC token 前缀，平台会自动拼接当前 PBC 的 basename。
+  - 跳转到 PBC 内的 Page：`"href": "/page/pagetoken"`
+  - 跳转到 PBC 内的 Form：`"href": "/form/formtoken/layout/layouttoken"`
+
+- **`hrefIsSiteBased: true`** — 跨 PBC 跳转，`href` 必须包含目标 PBC token 作为路径前缀，平台不会自动拼接 basename。
+  - 跳转到其他 PBC 的 Page：`"href": "/pbctoken/page/pagetoken"`
+  - 跳转到其他 PBC 的 Form：`"href": "/pbctoken/form/formtoken/layout/layouttoken"`
+
+跨 PBC 跳转示例：
+
+```json
+{
+  "action": {
+    "type": "link",
+    "hrefIsSiteBased": true,
+    "href": "/order-management/page/order-list"
+  }
+}
+```
+
+PBC 内部跳转示例（默认行为，可省略 hrefIsSiteBased）：
+
+```json
+{
+  "action": {
+    "type": "link",
+    "href": "/page/order-list"
+  }
+}
+```
 
 ---
 
