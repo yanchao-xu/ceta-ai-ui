@@ -159,6 +159,7 @@ Layout
 | -------------- | --------------------------------------------------------------------------------------------------------------- |
 | 每次都读       | `skills/ceta/references/schema-rules.md`（含组件样式规范章节）                                                  |
 | 遇到具体组件时 | `skills/ceta/references/components/input/{组件名}.md` 或 `skills/ceta/references/components/layout/{组件名}.md` |
+| 涉及显示隐藏时 | `skills/ceta/references/hidden-rules.md`（hidden / readonly / disabled 条件配置）                               |
 
 ### 生成流程
 
@@ -300,6 +301,8 @@ type 值参照 `ceta-basic` 中的"字段类型映射"表。
 
 ## 参考文档
 - schemaJson 通用结构规范 → 读取 `skills/ceta/references/schema-rules.md`
+- 组件显示隐藏规则 → 读取 `skills/ceta/references/hidden-rules.md`
+- 数据源配置规范 → 读取 `skills/ceta/references/data-source-rules.md`
 - 字段类型映射 → 读取 `references/field-types.md`
 - 组件详细文档（按需读取） → `skills/ceta/references/components/input/`、`skills/ceta/references/components/layout/`、`skills/ceta/references/components/display/`
 

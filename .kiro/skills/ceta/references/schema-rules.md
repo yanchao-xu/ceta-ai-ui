@@ -2,6 +2,7 @@
 
 > 此文件定义 CETA 平台 schemaJson 的顶层结构和通用规则。
 > 所有组件的具体属性见 components-*.md 文件。
+> 数据源配置规范见 `data-source-rules.md`。
 
 ---
 
@@ -79,7 +80,7 @@ CETA 的 schemaJson 统一使用 `{ form, fields }` 结构：
 | validation | object | 否 | 校验规则 |
 | style | object | 否 | CSS 样式对象（组件根层） |
 | className | string | 否 | CSS class 名，引用 themeConfig.css 中定义的全局 class |
-| hidden | boolean | 否 | 是否隐藏，默认 false |
+| hidden | boolean \| ConditionalPropertyPropType | 否 | 是否隐藏，支持静态布尔值或条件表达式，详见 `hidden-rules.md` |
 
 ### 关键规则
 

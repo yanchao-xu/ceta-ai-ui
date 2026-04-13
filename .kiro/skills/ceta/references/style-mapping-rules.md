@@ -426,6 +426,102 @@ cssMap = {
   .header-bar .title  → className="header-bar" + themeConfig.css 中定义子元素规则
 ```
 
+#### 步骤 0.2.5：CSS 优先级合并（多来源样式冲突处理）
+
+当同一个 HTML 元素被多个样式来源命中时（Tailwind class + `<style>` 标签 + inline style），属性可能冲突。**必须按优先级合并为一份最终样式，再写入 JSON。**
+
+##### 优先级链（从低到高）
+
+```
+最低  ④ Tailwind/Bootstrap 等框架 class
+      ③ <style> 标签中的低 specificity 规则（单 class 选择器，如 .card）
+      ② <style> 标签中的高 specificity 规则（组合选择器，如 .parent .child、.a.b）
+最高  ① inline style（style="..."）
+```
+
+**为什么框架 class 优先级最低？** Tailwind CDN 通常在 `<head>` 中先加载，`<style>` 标签在后面。同 specificity 下，后出现的规则覆盖先出现的。如果 HTML 中 `<style>` 在 Tailwind 之前（少见），需要反转 ③④ 的优先级——以 HTML 中的实际加载顺序为准。
+
+##### Specificity 速算规则
+
+| 选择器类型 | 权重 | 示例 |
+|-----------|------|------|
+| inline style | 1000 | `style="..."` |
+| ID 选择器 | 100 | `#header` |
+| class / 属性 / 伪类 | 10 | `.card`、`[type="text"]`、`:hover` |
+| 元素 / 伪元素 | 1 | `div`、`::before` |
+
+组合选择器权重相加：
+- `.metric-box` = 10
+- `.metric-box.bg-gray-50` = 20
+- `div.metric-box` = 11
+- `.parent .child` = 20
+- `#header .title` = 110
+
+##### 逐元素合并流程
+
+对每个 HTML 元素，按优先级从低到高依次叠加：
+
+```
+① 收集所有 Tailwind class 解析结果 → baseStyles
+② 收集 <style> 标签中命中的规则，按 specificity 从低到高排序 → overrideStyles
+   - 多条规则命中时，高 specificity 覆盖低 specificity
+   - 同 specificity 的，后出现的覆盖先出现的
+③ 收集 inline style → finalOverrides
+④ 合并：baseStyles ← overrideStyles ← finalOverrides
+⑤ 合并结果写入 inlineStyleMap[element]
+```
+
+##### 实际示例
+
+```html
+<!-- Tailwind CDN 在 <head> 中 -->
+<style>
+  .metric-box { position: relative; overflow: hidden; }
+  .border-orange { border-color: #ff6b35; }
+</style>
+
+<div class="metric-box bg-gray-50 p-4 border-l-4 border-orange">
+```
+
+合并过程：
+
+```
+第 1 层（Tailwind，最低优先级）：
+  bg-gray-50    → background: #f9fafb
+  p-4           → padding: 16px
+  border-l-4    → borderLeft: 4px solid
+  border-orange → Tailwind 标准色板无此 class，标记 _unknown
+
+第 2 层（<style> 标签，覆盖 Tailwind）：
+  .metric-box    → position: relative, overflow: hidden  （新增属性，无冲突）
+  .border-orange → borderColor: #ff6b35                  （覆盖 Tailwind 的 _unknown）
+
+第 3 层（inline style）：
+  无
+
+最终合并结果：
+  background: #f9fafb         ← Tailwind bg-gray-50
+  padding: 16px               ← Tailwind p-4
+  borderLeft: 4px solid       ← Tailwind border-l-4
+  borderColor: #ff6b35        ← <style> .border-orange（覆盖了 Tailwind）
+  position: relative          ← <style> .metric-box（新增）
+  overflow: hidden            ← <style> .metric-box（新增）
+```
+
+##### 冲突处理原则
+
+| 冲突场景 | 处理方式 |
+|---------|---------|
+| Tailwind class 和 `<style>` 定义了同名属性 | `<style>` 赢（后加载覆盖先加载） |
+| `<style>` 中两条规则命中同一元素，属性冲突 | 高 specificity 赢；同 specificity 则后出现的赢 |
+| inline style 和任何 class 冲突 | inline style 赢（最高优先级） |
+| Tailwind class 和 `<style>` 定义了同名 class（如 `.bg-orange`） | 检查 HTML 中的加载顺序，后加载的赢 |
+| 无法确定优先级 | 以 `<style>` 标签中的值为准（更可能是开发者有意覆盖） |
+
+**注意：大多数 HTML 原型不会有复杂的 specificity 冲突。** 最常见的情况就是 Tailwind class + `<style>` 标签的简单 class，两者都是 specificity 10，按加载顺序决定。遇到复杂情况时，以 `<style>` 标签中的值为准——因为开发者写 `<style>` 通常是为了覆盖框架默认值。
+
+---
+
 #### 步骤 0.3：生成组件 JSON 时应用样式
 
 转换 HTML 元素为 CETA 组件时，查阅 cssMap 填入样式：
