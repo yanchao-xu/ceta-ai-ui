@@ -306,6 +306,67 @@ type 值参照 `ceta-basic` 中的"字段类型映射"表。
 - 字段类型映射 → 读取 `references/field-types.md`
 - 组件详细文档（按需读取） → `skills/ceta/references/components/input/`、`skills/ceta/references/components/layout/`、`skills/ceta/references/components/display/`
 
+## 字段校验（validation）
+
+输入组件支持 `validation` 属性定义校验规则。不同组件支持的校验属性不同：
+
+| 组件 | 支持的 validation 属性 |
+|------|----------------------|
+| Input | `required`, `maxLength`, `regex` |
+| Textarea | `required`, `maxLength` |
+| NumberPicker | `required`, `minValue`, `maxValue` |
+| DatePicker | `required` |
+| Select / Radio / Checkbox | `required` |
+| Upload | `required` |
+| Switch | — |
+
+```json
+{
+  "component": "Input",
+  "id": "email",
+  "title": "邮箱",
+  "validation": { "required": true, "maxLength": 200, "regex": "^[\\w.-]+@[\\w.-]+\\.\\w+$" }
+}
+```
+
+```json
+{
+  "component": "NumberPicker",
+  "id": "quantity",
+  "title": "数量",
+  "validation": { "required": true, "minValue": 1, "maxValue": 9999 }
+}
+```
+
+## i18n 国际化约定
+
+schemaJson 中任何对象都可以通过 `_i18n_` 后缀属性添加多语言翻译。
+属性名格式：`{原属性名}_i18n_{语言代码}`
+
+```json
+{
+  "component": "Input",
+  "id": "name",
+  "title": "姓名",
+  "title_i18n_en": "Name",
+  "title_i18n_ja": "名前"
+}
+```
+
+```json
+{
+  "component": "Card",
+  "componentProps": {
+    "title": "基本信息",
+    "title_i18n_en": "Basic Information"
+  }
+}
+```
+
+默认只生成三种语言：`zh-CN`（中文）、`en`（英文）、`ja`（日文）。
+除非用户明确要求其他语言，否则不要生成额外的语言翻译。
+i18n 属性是可选的，不影响默认语言的显示。
+
 ## 注意事项
 - 字段的 storageField 由系统自动分配（value1, value2, ...），创建时不需要指定
 - 字段 token 在表单内唯一，建议用 camelCase

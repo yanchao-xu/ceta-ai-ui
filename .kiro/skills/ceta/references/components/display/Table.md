@@ -96,12 +96,67 @@
 
 ### dataFilters
 
+Table 支持通过 `dataFilters` 设置默认数据过滤条件，只显示符合条件的数据。
+
+#### 结构定义
+
+```json
+{
+  "dataFilters": [
+    {
+      "id": "fieldToken",
+      "filterType": "text",
+      "type": "equals",
+      "filter": "value"
+    }
+  ]
+}
+```
+
+#### 属性说明
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `id` | string | 过滤的字段 token |
+| `filterType` | `"text"` / `"number"` | 字段数据类型 |
+| `type` | string | 过滤操作符（见下表） |
+| `filter` | string | 过滤值，支持 `:fieldName` 引用当前表单其他字段的值 |
+
+#### 过滤操作符
+
+| filterType | 支持的 type |
+|-----------|-------------|
+| `text` | `equals`, `notEqual`, `contains`, `notContains`, `startsWith`, `endsWith` |
+| `number` | `equals`, `notEqual`, `lessThan`, `lessThanOrEqual`, `greaterThan`, `greaterThanOrEqual` |
+
+#### 示例
+
+静态过滤（只显示状态为 active 的数据）：
+```json
+{
+  "dataFilters": [
+    { "id": "status", "filterType": "text", "type": "equals", "filter": "active" }
+  ]
+}
+```
+
+引用字段值（`:fieldName` 语法，过滤值来自当前表单的另一个字段）：
+```json
+{
+  "dataFilters": [
+    { "id": "departmentId", "filterType": "text", "type": "equals", "filter": ":department" }
+  ]
+}
+```
+
+复合条件（AND/OR）：
 ```json
 {
   "dataFilters": [
     {
       "conditions": [
-        { "id": "fieldToken", "filterType": "text", "type": "equals", "filter": "value", "colId": "fieldToken" }
+        { "id": "status", "filterType": "text", "type": "equals", "filter": "active", "colId": "status" },
+        { "id": "priority", "filterType": "text", "type": "equals", "filter": "high", "colId": "priority" }
       ],
       "operator": "OR"
     }

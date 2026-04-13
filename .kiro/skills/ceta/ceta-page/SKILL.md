@@ -218,6 +218,7 @@ Card 和 Table 都需要 `style: { "height": "100%" }`。
 
 - `addButtonHref` — 新增按钮的跳转地址，格式：`/form/{formEntityToken}/layout/{newLayoutToken}`
 - `pinnedFilter` — 默认显示的筛选字段列表
+- `dataFilters` — 默认数据过滤条件（只显示符合条件的数据），支持 `:fieldName` 引用其他字段值。详见 `references/components/display/Table.md` 的 dataFilters 章节
 - `pagination` — 是否分页（建议开启）
 - `withCard` — 表格是否带卡片样式
 - `dataSource.token` — 数据源表单的 token
