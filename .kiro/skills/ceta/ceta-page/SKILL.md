@@ -106,7 +106,7 @@ FormEntityPage
 
 列表页的固定结构：`{ form: { title }, fields: [Card > Table] }`
 
-Card 和 Table 都需要 `style: { "height": "100%" }`。
+Table（包括 EditableTable）的高度应从 HTML 中读取，如果读不出来则默认设为 `450px`，不要使用 `"height": "100%"`。
 
 
 ## 列表页 schemaJson 模板（重要）
@@ -126,7 +126,7 @@ Card 和 Table 都需要 `style: { "height": "100%" }`。
         {
           "component": "Table",
           "id": "data-list-table",
-          "style": { "height": "100%" },
+          "style": { "height": "450px" },
           "componentProps": {
             "dataSource": {
               "token": "form-entity-token-here"
@@ -180,7 +180,7 @@ Card 和 Table 都需要 `style: { "height": "100%" }`。
               }
             ],
             "addButtonHref": "/form/form-entity-token-here/layout/new",
-            "pinnedFilter": ["fieldToken1", "fieldToken2"],
+            "pinnedFilter": [],
             "pagination": true,
             "withCard": true
           }
@@ -217,7 +217,7 @@ Card 和 Table 都需要 `style: { "height": "100%" }`。
 ### 关键配置项
 
 - `addButtonHref` — 新增按钮的跳转地址，格式：`/form/{formEntityToken}/layout/{newLayoutToken}`
-- `pinnedFilter` — 默认显示的筛选字段列表
+- `pinnedFilter` — 默认显示的筛选字段列表（默认为空数组，不预设筛选字段）
 - `dataFilters` — 默认数据过滤条件（只显示符合条件的数据），支持 `:fieldName` 引用其他字段值。详见 `references/components/display/Table.md` 的 dataFilters 章节
 - `pagination` — 是否分页（建议开启）
 - `withCard` — 表格是否带卡片样式
@@ -238,7 +238,7 @@ Card 和 Table 都需要 `style: { "height": "100%" }`。
         {
           "component": "Table",
           "id": "user-form-table",
-          "style": { "height": "100%" },
+          "style": { "height": "450px" },
           "componentProps": {
             "dataSource": { "token": "user-form" },
             "columnDefs": [
@@ -274,7 +274,7 @@ Card 和 Table 都需要 `style: { "height": "100%" }`。
               }
             ],
             "addButtonHref": "/form/user-form/layout/new",
-            "pinnedFilter": ["username", "email", "role"],
+            "pinnedFilter": [],
             "pagination": true
           }
         }
@@ -352,7 +352,7 @@ Card 和 Table 都需要 `style: { "height": "100%" }`。
 - 列表页必须用 Table 组件（包在 Card 内），不能只用顶层 columns
 - Table 的 columnDefs 必须包含 ACTION_COLUMN 才有操作按钮
 - **创建页面后必须完成三步才能在前端看到：1) 更新 PBC routesJson 2) 更新 PBC config 3) 更新项目 frontEndConfig 的 navbar**
-- Table 和 Card 都需要 `style: { "height": "100%" }` 才能正确撑满页面
+- Table（包括 EditableTable）的高度应从 HTML 中读取，读不出来默认 `450px`，不要使用 `"height": "100%"`
 - 遇到无法映射的组件结构，用 `Text` 组件兜底并告知用户
 - 输出文件使用格式化 JSON（2 空格缩进）
 

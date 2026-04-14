@@ -41,7 +41,7 @@ CETA 的 schemaJson 统一使用 `{ form, fields }` 结构：
 | title | string | 页面/表单标题 | 无 |
 | defaultSubmitButton | boolean | 是否显示默认提交按钮 | false |
 | defaultCancelButton | boolean | 是否显示默认取消按钮 | false |
-| labelLayout | string | 标签布局：`"vertical"` 或 `"horizontal"` | `"horizontal"` |
+| labelLayout | string | 标签布局：`"vertical"` 或 `"horizontal"` | `"vertical"` |
 | browserTitle | object | 浏览器标题配置 | 无 |
 | enableAutoLock | boolean | 是否启用自动锁定 | false |
 
@@ -164,7 +164,7 @@ CETA 的 schemaJson 统一使用 `{ form, fields }` 结构：
 - `form` 通常只有 `title`
 - `fields` 中主要是 Table 组件（含 columnDefs）
 - Table 通过 `componentProps.dataSource.token` 关联 FormEntity
-- Table 外层 Card 和 Table 自身都需要 `style: { "height": "100%" }`
+- Table / EditableTable 的高度应从 HTML 中读取，读不出来默认 `450px`，不要使用 `"height": "100%"`
 
 ---
 
@@ -249,7 +249,7 @@ Stack 的 `componentProps` 顶层属性：`flexDirection`、`alignItems`、`just
 }
 ```
 
-Grid 的 `componentProps` 顶层属性：`colNumber`、`columnGap`、`rowGap`、`gap`、`alignItems`、`justifyContent`、`justifyItems`、`alignContent`、`blankChildPlace`
+Grid 的 `componentProps` 顶层属性：`colNumber`（建议最多不超过 4）、`columnGap`、`rowGap`、`gap`、`alignItems`、`justifyContent`、`justifyItems`、`alignContent`、`blankChildPlace`
 
 Grid 子项通过 `span` 控制占列数（优先用 span，不用 width）。
 

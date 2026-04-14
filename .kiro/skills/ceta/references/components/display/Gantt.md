@@ -28,7 +28,7 @@
       { "field": "startDate", "headerName": "开始日期", "width": 120 }
     ],
     "ganttConfig": {},
-    "pinnedFilter": ["status"]
+    "pinnedFilter": []
   },
   "style": { "height": 600 }
 }

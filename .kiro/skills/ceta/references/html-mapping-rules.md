@@ -286,8 +286,8 @@ HTML class: .form-renderer-default-button
 ### 标签布局
 
 ```
-.label-layout-horizontal → form.labelLayout: "horizontal"（可省略，是默认值）
-.label-layout-vertical   → form.labelLayout: "vertical"
+.label-layout-horizontal → form.labelLayout: "horizontal"
+.label-layout-vertical   → form.labelLayout: "vertical"（可省略，是默认值）
 ```
 
 ---
@@ -354,7 +354,7 @@ HTML class: .form-renderer-default-button
 
 ```
 HTML: .form-renderer > 多个 .input-element
-→ JSON: { form: { defaultSubmitButton: true, defaultCancelButton: true }, fields: [ 输入组件... ] }
+→ JSON: { form: { defaultSubmitButton: true, defaultCancelButton: true, labelLayout: "vertical" }, fields: [ 输入组件... ] }
 ```
 
 ### 模式 B：Collapse 分组表单
@@ -377,10 +377,10 @@ item.fields → [{ component: "Grid", componentProps: { colNumber: 2 }, fields: 
 
 ```
 HTML: .form-renderer > .card-layout > .icp-ag-table
-→ JSON: { form: { title: "..." }, fields: [{ component: "Card", fields: [{ component: "Table", ... }], style: { height: "100%" } }] }
+→ JSON: { form: { title: "..." }, fields: [{ component: "Card", fields: [{ component: "Table", ... }] }] }
 ```
 
-Table 外层 Card 和 Table 自身都需要 `style: { "height": "100%" }`。
+Table / EditableTable 的高度应从 HTML 中读取实际值，如果读不出来则默认设为 `450px`，不要使用 `"height": "100%"`。
 
 ---
 

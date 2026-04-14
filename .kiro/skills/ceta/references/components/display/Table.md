@@ -12,12 +12,14 @@
     "dataSource": { "token": "{entityToken}" },
     "columnDefs": [ ... ],
     "addButtonHref": "/form/{entityToken}/layout/new",
-    "pinnedFilter": ["field1", "field2"],
+    "pinnedFilter": [],
     "pagination": true
   },
-  "style": { "height": "100%" }
+  "style": { "height": "450px" }
 }
 ```
+
+> Table / EditableTable 的高度应从 HTML 中读取实际值，如果读不出来则默认设为 `450px`，不要使用 `"height": "100%"`。
 
 ## componentProps
 
