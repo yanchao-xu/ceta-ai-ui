@@ -28,11 +28,13 @@ FormEntity 是 CETA 的数据模型，包含字段定义（Fields）和表单布
 一个 FormEntity 属于一个 PBC，对应一张数据库表。
 
 FormEntity 的 Layout schemaJson 可以包含任意组件：
+
 - 输入控件（Input、Select 等）— `id` 映射为数据库字段
 - 展示控件（Table、Text、Button、Image 等）— 不映射字段，纯 UI
 - 布局控件（Card、Grid、Stack、Collapse 等）— 组织结构
 
 本 SKILL 负责：
+
 1. 定义 FormEntity 的数据模型、字段类型和 Layout schemaJson 结构规范
 2. 通过 MCP API 创建/修改/删除表单资源
 3. 生成 Layout schemaJson 和字段定义 JSON 文件（供 assemble → import 流程使用）
@@ -43,6 +45,7 @@ FormEntity 的 Layout schemaJson 可以包含任意组件：
 ## 数据模型
 
 ### FormEntity
+
 ```
 FormEntity
 ├── id: number
@@ -63,6 +66,7 @@ FormEntity
 ```
 
 ### Field
+
 ```
 Field
 ├── id: number
@@ -79,6 +83,7 @@ Field
 ```
 
 ### Layout
+
 ```
 Layout
 ├── id: number
@@ -94,22 +99,23 @@ Layout
 
 ## 字段类型
 
-| type | 说明 | 对应前端组件 |
-|------|------|-------------|
-| TEXT_BOX | 单行文本 | Input |
-| TEXTAREA | 多行文本 | Textarea |
-| NUMBER | 数字 | NumberPicker |
-| TIME | 日期时间 | TimePicker |
-| SELECT | 下拉选择 | Select |
-| SWITCH | 开关 | Switch |
-| RADIO | 单选 | Radio |
-| UPLOAD | 文件上传 | Upload |
-| PASSWORD | 密码 | Password |
-| ACL | 关联引用 | ACL（关联其他表单） |
+| type     | 说明     | 对应前端组件        |
+| -------- | -------- | ------------------- |
+| TEXT_BOX | 单行文本 | Input               |
+| TEXTAREA | 多行文本 | Textarea            |
+| NUMBER   | 数字     | NumberPicker        |
+| TIME     | 日期时间 | TimePicker          |
+| SELECT   | 下拉选择 | Select              |
+| SWITCH   | 开关     | Switch              |
+| RADIO    | 单选     | Radio               |
+| UPLOAD   | 文件上传 | Upload              |
+| PASSWORD | 密码     | Password            |
+| ACL      | 关联引用 | ACL（关联其他表单） |
 
 ## MCP 工具
 
 ### 表单 CRUD
+
 - `form__form_entity__create` — 创建表单
 - `form__form_entity__get` — 获取表单详情（含字段和布局）
 - `form__form_entity__list` — 列出表单
@@ -118,6 +124,7 @@ Layout
 - `form__form_entity__delete` — 删除表单
 
 ### 字段管理
+
 - `form__form_entity_field__create` — 创建单个字段
 - `form__form_entity_field__create_by_batch` — 批量创建字段
 - `form__form_entity_field__list` — 列出字段
@@ -125,6 +132,7 @@ Layout
 - `form__form_entity_field__delete` — 删除字段
 
 ### 布局管理
+
 - `form__form_entity_layout__create` — 创建布局
 - `form__form_entity_layout__list` — 列出布局
 - `form__form_entity_layout__get` — 获取布局详情
@@ -133,16 +141,17 @@ Layout
 ## 操作流程
 
 ### 通过 API 创建完整表单
+
 1. 确认 PBC 存在（`form__pbc__get`）
 2. 调用 `form__form_entity__create` 创建表单实体
 3. 调用 `form__form_entity_field__create_by_batch` 批量创建字段
 4. 调用 `form__form_entity_layout__create` 创建布局（new/edit/view）
 5. 调用 `form__form_entity__get` 验证
 
-
 ## 生成 schemaJson 和字段定义
 
 本 SKILL 负责根据结构化的字段信息生成：
+
 1. **Layout schemaJson** → 写入 `ceta-workspace/{project}/{pbcs}/{pbc}/{entity}-form.json`
 
 字段定义信息记录在 analysis.json 中，由 assemble 脚本从 analysis.json 提取，不再单独生成 fields.json 文件。
@@ -179,6 +188,9 @@ Layout
 
 #### 3. 输出字段定义列表
 
+fields 文件支持两种格式：
+
+**纯数组格式**（向后兼容，entity token 从文件名推导）：
 ```json
 [
   { "name": "用户名", "token": "username", "type": "TEXT_BOX" },
@@ -186,6 +198,20 @@ Layout
   { "name": "状态", "token": "status", "type": "SWITCH" }
 ]
 ```
+
+**对象格式**（推荐，显式声明 entity token）：
+```json
+{
+  "entityToken": "system-user-form",
+  "fields": [
+    { "name": "用户名", "token": "username", "type": "TEXT_BOX" },
+    { "name": "邮箱", "token": "email", "type": "TEXT_BOX" },
+    { "name": "状态", "token": "status", "type": "SWITCH" }
+  ]
+}
+```
+
+当 entity token 和文件名前缀不一致时（如 token 带 `-form` 后缀），**必须使用对象格式**。
 
 type 值参照 `ceta-basic` 中的"字段类型映射"表。
 
@@ -215,13 +241,31 @@ type 值参照 `ceta-basic` 中的"字段类型映射"表。
 
 ```json
 {
-  "form": { "defaultSubmitButton": true, "defaultCancelButton": true, "labelLayout": "vertical" },
+  "form": {
+    "defaultSubmitButton": true,
+    "defaultCancelButton": true,
+    "labelLayout": "vertical"
+  },
   "fields": [
-    { "component": "Input", "id": "name", "title": "姓名", "validation": { "maxLength": 200 } },
+    {
+      "component": "Input",
+      "id": "name",
+      "title": "姓名",
+      "validation": { "maxLength": 200 }
+    },
     { "component": "Textarea", "id": "note", "title": "备注" },
     { "component": "DatePicker", "id": "date", "title": "日期" },
-    { "component": "Select", "id": "status", "title": "状态",
-      "componentProps": { "options": [{ "label": "成功", "value": "success" }, { "label": "失败", "value": "failure" }] } }
+    {
+      "component": "Select",
+      "id": "status",
+      "title": "状态",
+      "componentProps": {
+        "options": [
+          { "label": "成功", "value": "success" },
+          { "label": "失败", "value": "failure" }
+        ]
+      }
+    }
   ]
 }
 ```
@@ -230,7 +274,11 @@ type 值参照 `ceta-basic` 中的"字段类型映射"表。
 
 ```json
 {
-  "form": { "defaultSubmitButton": true, "defaultCancelButton": true, "labelLayout": "vertical" },
+  "form": {
+    "defaultSubmitButton": true,
+    "defaultCancelButton": true,
+    "labelLayout": "vertical"
+  },
   "fields": [
     {
       "component": "Card",
@@ -238,7 +286,11 @@ type 值参照 `ceta-basic` 中的"字段类型映射"表。
       "fields": [
         {
           "component": "Grid",
-          "componentProps": { "colNumber": 2, "columnGap": 16, "blankChildPlace": false },
+          "componentProps": {
+            "colNumber": 2,
+            "columnGap": 16,
+            "blankChildPlace": false
+          },
           "fields": [
             { "id": "name", "title": "姓名", "component": "Input" },
             { "id": "phone", "title": "电话", "component": "Input" }
@@ -254,7 +306,11 @@ type 值参照 `ceta-basic` 中的"字段类型映射"表。
 
 ```json
 {
-  "form": { "defaultSubmitButton": true, "defaultCancelButton": true, "labelLayout": "vertical" },
+  "form": {
+    "defaultSubmitButton": true,
+    "defaultCancelButton": true,
+    "labelLayout": "vertical"
+  },
   "fields": [
     {
       "component": "Card",
@@ -267,23 +323,47 @@ type 值参照 `ceta-basic` 中的"字段类型映射"表。
             "itemSplit": true,
             "items": [
               {
-                "key": "key1", "label": "基本信息",
+                "key": "key1",
+                "label": "基本信息",
                 "fields": [
-                  { "component": "Grid", "componentProps": { "blankChildPlace": false, "colNumber": 2, "columnGap": 16 },
+                  {
+                    "component": "Grid",
+                    "componentProps": {
+                      "blankChildPlace": false,
+                      "colNumber": 2,
+                      "columnGap": 16
+                    },
                     "fields": [
                       { "id": "name", "title": "姓名", "component": "Input" },
                       { "id": "phone", "title": "电话", "component": "Input" }
-                    ] }
+                    ]
+                  }
                 ]
               },
               {
-                "key": "key2", "label": "详细信息",
+                "key": "key2",
+                "label": "详细信息",
                 "fields": [
-                  { "component": "Grid", "componentProps": { "blankChildPlace": false, "colNumber": 2, "columnGap": 16 },
+                  {
+                    "component": "Grid",
+                    "componentProps": {
+                      "blankChildPlace": false,
+                      "colNumber": 2,
+                      "columnGap": 16
+                    },
                     "fields": [
-                      { "id": "address", "title": "地址", "component": "Input" },
-                      { "id": "birthday", "title": "生日", "component": "DatePicker" }
-                    ] }
+                      {
+                        "id": "address",
+                        "title": "地址",
+                        "component": "Input"
+                      },
+                      {
+                        "id": "birthday",
+                        "title": "生日",
+                        "component": "DatePicker"
+                      }
+                    ]
+                  }
                 ]
               }
             ]
@@ -301,6 +381,7 @@ type 值参照 `ceta-basic` 中的"字段类型映射"表。
 完整映射表 → 读取 `references/field-types.md`
 
 ## 参考文档
+
 - schemaJson 通用结构规范 → 读取 `skills/ceta/references/schema-rules.md`
 - 组件显示隐藏规则 → 读取 `skills/ceta/references/hidden-rules.md`
 - 数据源配置规范 → 读取 `skills/ceta/references/data-source-rules.md`
@@ -311,22 +392,26 @@ type 值参照 `ceta-basic` 中的"字段类型映射"表。
 
 输入组件支持 `validation` 属性定义校验规则。不同组件支持的校验属性不同：
 
-| 组件 | 支持的 validation 属性 |
-|------|----------------------|
-| Input | `required`, `maxLength`, `regex` |
-| Textarea | `required`, `maxLength` |
-| NumberPicker | `required`, `minValue`, `maxValue` |
-| DatePicker | `required` |
-| Select / Radio / Checkbox | `required` |
-| Upload | `required` |
-| Switch | — |
+| 组件                      | 支持的 validation 属性             |
+| ------------------------- | ---------------------------------- |
+| Input                     | `required`, `maxLength`, `regex`   |
+| Textarea                  | `required`, `maxLength`            |
+| NumberPicker              | `required`, `minValue`, `maxValue` |
+| DatePicker                | `required`                         |
+| Select / Radio / Checkbox | `required`                         |
+| Upload                    | `required`                         |
+| Switch                    | —                                  |
 
 ```json
 {
   "component": "Input",
   "id": "email",
   "title": "邮箱",
-  "validation": { "required": true, "maxLength": 200, "regex": "^[\\w.-]+@[\\w.-]+\\.\\w+$" }
+  "validation": {
+    "required": true,
+    "maxLength": 200,
+    "regex": "^[\\w.-]+@[\\w.-]+\\.\\w+$"
+  }
 }
 ```
 
@@ -339,36 +424,8 @@ type 值参照 `ceta-basic` 中的"字段类型映射"表。
 }
 ```
 
-## i18n 国际化约定
-
-schemaJson 中任何对象都可以通过 `_i18n_` 后缀属性添加多语言翻译。
-属性名格式：`{原属性名}_i18n_{语言代码}`
-
-```json
-{
-  "component": "Input",
-  "id": "name",
-  "title": "姓名",
-  "title_i18n_en-US": "Name",
-  "title_i18n_ja-JP": "名前"
-}
-```
-
-```json
-{
-  "component": "Card",
-  "componentProps": {
-    "title": "基本信息",
-    "title_i18n_en-US": "Basic Information"
-  }
-}
-```
-
-默认只生成三种语言：`zh-CN`（中文）、`en-US`（英文）、`ja-JP`（日文）。
-除非用户明确要求其他语言，否则不要生成额外的语言翻译。
-i18n 属性是可选的，不影响默认语言的显示。
-
 ## 注意事项
+
 - 字段的 storageField 由系统自动分配（value1, value2, ...），创建时不需要指定
 - 字段 token 在表单内唯一，建议用 camelCase
 - 一个表单通常需要多个 Layout：new（新建）、edit（编辑）、view（查看）
@@ -383,6 +440,7 @@ i18n 属性是可选的，不影响默认语言的显示。
 生成的 `-form.json` 是**中间产物**，不要直接通过 MCP API 创建到平台。
 
 正确流程：
+
 1. 本 SKILL 生成 `{entity}-form.json` 到 `ceta-workspace/` 目录
 2. 由 `ceta_sync.sh assemble-pbc` 将这些文件拼装为 `pbc-seed-data.json`（字段定义从 analysis.json 提取）
 3. 由 `ceta_sync.sh import-pbc` 统一导入到 CETA 平台

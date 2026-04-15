@@ -46,7 +46,9 @@ CETA 的 schemaJson 统一使用 `{ form, fields }` 结构：
 | enableAutoLock | boolean | 是否启用自动锁定 | false |
 
 **表单页**（新建/编辑/查看）通常设置 `defaultSubmitButton: true, defaultCancelButton: true`。
-**列表页**通常只设置 `title`。
+**列表页/页面**通常只需要 `title`，但 `labelLayout: "vertical"` 应始终显式设置。
+
+**重要：`labelLayout: "vertical"` 必须在所有 schemaJson 的 `form` 对象中显式设置，无论是表单布局（Layout）还是页面配置（FormEntityPage）。** 虽然平台默认值是 `"vertical"`，但省略会导致生成不一致，必须显式声明。
 
 ### fields 数组
 
@@ -161,7 +163,7 @@ CETA 的 schemaJson 统一使用 `{ form, fields }` 结构：
 ### 列表页 schemaJson（用于 FormEntityPage）
 
 用于 FormEntityPage（列表页、仪表盘等），特点：
-- `form` 通常只有 `title`
+- `form` 必须设置 `title` 和 `labelLayout: "vertical"`
 - `fields` 中主要是 Table 组件（含 columnDefs）
 - Table 通过 `componentProps.dataSource.token` 关联 FormEntity
 - Table / EditableTable 的高度应从 HTML 中读取，读不出来默认 `450px`，不要使用 `"height": "100%"`
