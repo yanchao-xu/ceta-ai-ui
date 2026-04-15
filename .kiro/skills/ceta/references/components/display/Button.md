@@ -30,7 +30,7 @@
 | type            | `'default'` \| `'primary'` \| `'ghost'` \| `'dashed'` \| `'link'` \| `'text'` | `'default'` | 按钮外观类型（对应 Ant Design Button） |
 | size            | `'small'` \| `'middle'` \| `'large'`                                          | `'middle'`  | 按钮尺寸                               |
 | content         | string                                                                        |             | 按钮文字内容，支持 Variable Pattern    |
-| icon            | string                                                                        |             | 按钮图标名称                           |
+| icon            | string                                                                        |             | 按钮图标名称（命名规则见 Icon.md 图标命名规则，如 `"material:search"`, `"oct:home"`, `"ant:api-outlined"`） |
 | clickUseCapture | boolean                                                                       | `false`     | 是否在捕获阶段触发点击事件             |
 
 ### action 通用属性

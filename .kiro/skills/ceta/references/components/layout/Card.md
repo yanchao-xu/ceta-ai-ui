@@ -130,5 +130,5 @@ themeConfig.css：
 ## 使用场景
 
 - 表单页：作为字段分组容器，内部嵌套 Grid 或 Collapse
-- 列表页：作为 Table 的外层容器，Card 和 Table 都需要 `style: { "height": "100%" }`
+- 列表页：作为 Table 的外层容器，Table 高度从 HTML 读取，读不出来默认 `450px`
 - 信息展示：搜索结果卡片、摘要卡片

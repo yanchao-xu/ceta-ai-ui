@@ -573,12 +573,22 @@ PBC 对应的 HTML 片段
 ```
 ceta-workspace/{project-token}/pbcs/{pbc-token}/
 ├── {entity-token}-form.json       # FormEntity 的表单布局 schemaJson
+├── {file-prefix}-fields.json      # FormEntity 的字段定义（纯数组或对象格式）
 └── {page-token}-page.json         # Page 的页面配置 schemaJson
 ```
 
-**文件名 = token + 类型后缀**，app-config.json 中引用的 token 必须和文件名一一对应：
+**文件命名规则**：
 
-- FormEntity token `passenger-info` → 文件 `passenger-info-form.json`
+form 和 page 文件名 = token + 类型后缀。fields 文件名前缀和 form 文件名前缀一致。
+
+assemble 脚本从 form 文件名推导 entity token（去掉 `-form.json`）。如果实际 token 和推导结果不同，
+需要在 fields 文件中用对象格式显式声明 `entityToken`。
+
+| entity token | form 文件 | fields 文件 | fields 是否需要声明 entityToken |
+|-------------|----------|------------|-------------------------------|
+| `passenger-info` | `passenger-info-form.json` | `passenger-info-fields.json` | 不需要（推导结果一致） |
+| `customer-form` | `customer-form.json` | `customer-fields.json` | **需要**（推导为 `customer`，实际是 `customer-form`） |
+
 - Page token `pnr-search` → 文件 `pnr-search-page.json`
 - app-config.json 中的路由：`/pnr-management/page/pnr-search` 对应 `pnr-search-page.json`
 - app-config.json 中的路由：`/pnr-management/form/passenger-info/layout/new` 对应 `passenger-info-form.json`
@@ -947,8 +957,25 @@ Button 支持 19 种 action 类型（详见 `components/display/Button.md`），
 | "下载"/"导出" | `{ "type": "download" }` |
 | "导入"/"上传" | `{ "type": "upload" }` |
 | "刷新" | `{ "type": "refreshTable" }` 或 `{ "type": "refresh" }` |
-| 导航类（"下一步"/"去XX页"） | `{ "type": "link", "href": "..." }` |
+| 导航类（"下一步"/"去XX页"）跳转到同 PBC 内的页面 | `{ "type": "link", "href": "/page/{schemaId}" }` |
+| 导航类跳转到其他 PBC 的页面 | `{ "type": "link", "hrefIsSiteBased": true, "href": "/{pbcToken}/page/{schemaId}" }` |
 | "确认XX"（危险操作） | `{ "type": "confirm", "successAction": { ... } }` |
+
+##### Button href 的 PBC 内/外跳转规则（重要 — 必须遵守）
+
+**PBC 内部跳转（默认）：** href 不带 PBC token 前缀，平台自动拼接当前 PBC 的 basename。
+- 跳转到同 PBC 内的 Page：`"href": "/page/{schemaId}"`
+- 跳转到同 PBC 内新建表单：`"href": "/form/{formToken}/layout/{layoutToken}"`
+- 跳转到同 PBC 内编辑表单：`"href": "/form/{formToken}/layout/{layoutToken}/:id"`
+- 跳转到同 PBC 内查看表单：`"href": "/form/:id/view"`
+
+**跨 PBC 跳转：** 必须设置 `"hrefIsSiteBased": true`，href 带目标 PBC token 前缀。
+- 跳转到其他 PBC 的 Page：`"hrefIsSiteBased": true, "href": "/{pbcToken}/page/{schemaId}"`
+- 跳转到其他 PBC 新建表单：`"hrefIsSiteBased": true, "href": "/{pbcToken}/form/{formToken}/layout/{layoutToken}"`
+- 跳转到其他 PBC 编辑表单：`"hrefIsSiteBased": true, "href": "/{pbcToken}/form/{formToken}/layout/{layoutToken}/:id"`
+- 跳转到其他 PBC 查看表单：`"hrefIsSiteBased": true, "href": "/{pbcToken}/form/:id/view"`
+
+**判断方法：** 看按钮所在的页面和目标页面/表单是否属于同一个 PBC。同一 PBC 内的所有跳转都是内部跳转，不带 PBC token 前缀。
 
 如果无法确定 action 类型，至少配一个 `{ "type": "link", "href": "#" }` 占位，并在 analysis.json 中标注需要用户确认。
 

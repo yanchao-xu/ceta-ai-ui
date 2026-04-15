@@ -1,6 +1,6 @@
 # 其他包装器组件
 
-> 以下组件已有独立文档：Data、LinkWrapper（别名 Link）。
+> 以下组件已有独立文档：Data、LinkWrapper（别名 Link）、Extension。
 
 ---
 
@@ -11,21 +11,6 @@
 ```json
 {
   "component": "Timer",
-  "componentProps": {}
-}
-```
-
-> 待补充详细文档。
-
----
-
-## Extension 扩展
-
-外部扩展组件容器。
-
-```json
-{
-  "component": "Extension",
   "componentProps": {}
 }
 ```
@@ -54,5 +39,5 @@
 | Data | — | 数据容器 | ✔️ Data.md |
 | LinkWrapper | Link | 链接包装器 | ✔️ LinkWrapper.md |
 | Timer | — | 定时器 | 本文件（待补充） |
-| Extension | — | 扩展容器 | 本文件（待补充） |
+| Extension | — | 扩展容器 | ✔️ Extension.md |
 | CombinedView | — | 组合视图 | 本文件（待补充） |
