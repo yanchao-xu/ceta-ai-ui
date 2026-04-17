@@ -87,6 +87,20 @@
 | suppressStatusbar | 禁止状态栏 |
 | supportShowDeleted | 支持"显示已删除"功能 |
 
+#### ⚠️ suppressAddButton 生成规则
+
+`suppressAddButton` 默认值为 `false`，这意味着**不设置此属性时，平台会自动渲染一个"新增"按钮**。
+生成 Table JSON 时，必须根据业务场景判断是否需要新增按钮，并显式设置：
+
+| 场景 | 设置 | 原因 |
+|------|------|------|
+| 标准 CRUD 列表页（有关联 FormEntity，用户可新建数据） | 不设置（或 `false`），同时配置 `addButtonHref` | 需要新增按钮 |
+| 只读展示表格（搜索结果、确认页航段表、SSR 表、历史记录等） | `"suppressAddButton": true` | 不需要新增按钮 |
+| 仪表盘/统计表格 | `"suppressAddButton": true` | 不需要新增按钮 |
+| 嵌入在其他页面中的关联数据表格（非独立列表页） | `"suppressAddButton": true` | 不需要新增按钮 |
+
+**判断方法：看 HTML 原文中该 `<table>` 区域是否有"新建"/"新增"/"创建"/"添加"按钮。如果没有，就设置 `"suppressAddButton": true`。如果有，就配置 `addButtonHref` 指向新建表单。**
+
 
 ## columnDefs 列定义
 
