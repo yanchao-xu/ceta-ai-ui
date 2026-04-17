@@ -59,6 +59,95 @@ Project
 - 运行时通过 `window.__icp_i18n__` 注入 i18n 覆盖，允许免构建修改语言配置
 - 配置中的文本字段（title、description、logo alt、菜单 label 等）会被 i18n key 生成器扫描，自动生成翻译 key
 
+### 初始模板最低字段要求（只能多不能少）
+
+生成 `app-config.json` 时，**必须**以下面的结构为最低基线模板。所有字段都必须存在且有值，可以在此基础上增加字段，但**绝不能缺少任何字段**：
+
+```json
+{
+  "appConfig": {
+    "template": "Template2",
+    "mobileTemplate": "MobileTemplate1",
+    "title": "",
+    "description": "",
+    "baseUrl": "/ui/",
+    "favicon": "public/favicon.ico",
+    "projectName": "",
+    "appearance": "light",
+    "i18n": {
+      "allowedLanguages": ["zh-CN"],
+      "fallbackLng": "zh-CN"
+    },
+    "templateConfig": {
+      "title": "",
+      "logo": {
+        "src": "",
+        "alt": "Logo",
+        "default": "default-logo-4"
+      },
+      "navbar": {
+        "appearance": "light",
+        "items": []
+      },
+      "header": {},
+      "sidebar": {
+        "collapsible": true
+      },
+      "footer": {},
+      "login": {
+        "template": "LoginSplit"
+      }
+    },
+    "mobileTemplateConfig": {
+      "carousel": {},
+      "subApps": [],
+      "navbar": {
+        "items": [
+          { "to": "/mobile", "label": "", "icon": "home" },
+          { "to": "/mobile/my", "label": "", "icon": "person" }
+        ]
+      }
+    },
+    "themeConfig": {
+      "base": "",
+      "token": {},
+      "components": {},
+      "cssVars": {},
+      "css": ""
+    }
+  },
+  "routers": {
+    "desktop": {
+      "/": {
+        "pageTitle": "",
+        "isHomePage": true
+      },
+      "/todo-list/form/:flowInstanceId/:flowThreadId/confirm": {
+        "pageTitle": "",
+        "formType": "FLOW-FORM"
+      },
+      "/todo-list/form/:flowInstanceId/:flowThreadId/approval": {
+        "pageTitle": "",
+        "formType": "FLOW-APPROVAL"
+      }
+    },
+    "mobile": {
+      "/mobile": {
+        "pageTitle": "",
+        "isHomePage": true,
+        "showNavBar": true
+      }
+    }
+  }
+}
+```
+
+**关键约束：**
+- `template`、`mobileTemplate`、`baseUrl`、`favicon`、`appearance`、`i18n`、`templateConfig`、`mobileTemplateConfig`、`themeConfig`、`routers` 等字段**缺一不可**
+- 即使某些字段值为空字符串或空对象，也必须保留字段本身
+- 生成时可以在此基础上添加更多字段（如 `navbar.position`、`userMenu`、`agGridCssVars` 等），但不能删减上述任何字段
+- 这是最低保障结构，确保前端应用能正常启动和渲染
+
 ---
 
 ## 一、模板选择
@@ -712,9 +801,3 @@ ceta-html-analyzer 完成
 - 连接器管理（`/connector`）和流程挖掘（`/mining/process-mining`）是平台内置功能，按需添加
 - 根路由 `/` 的 `pbcToken` 和 `schemaId` 应指向项目的首页 PBC
 
-## 参考模板
-
-实际项目的 app.config.json 完整示例见：
-- `templates/app-config/plant-maintenance.json` — 含完整菜单、主题、路由、移动端配置
-- `templates/app-config/trade-boost.json` — 含组件级 token、侧边栏主题色、状态色 class
-- `templates/app-config/resi-gudang.json` — 含登录页注册链接、ag-grid 表头样式
