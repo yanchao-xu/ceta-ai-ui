@@ -32,14 +32,16 @@
 
 ## componentProps
 
+> 数据源配置（`dataSource` / `dataUrl`）的完整规范见 `skills/ceta/references/data-source-rules.md`。两者二选一。
+
 | 属性 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | alias | string \| object | | 将数据放入 context.dataSource 下的属性名 |
 | setToFormData | object | | 将数据放入表单数据（`{ merge: bool }`） |
 | intervalTime | number | | 自动刷新间隔（毫秒） |
 | renderWhileLoading | boolean | `false` | loading 时也渲染子元素 |
-| dataSource | `{ token, pbcToken, listUrl }` | | 数据源 |
-| dataUrl | string | | 通过 URL 获取数据 |
+| dataSource | `{ token, pbcToken, listUrl }` | | 数据源，与 `dataUrl` 二选一 |
+| dataUrl | string | | 通过 URL 获取数据，与 `dataSource` 二选一 |
 | dataFilters | array | | 固定 filter 条件 |
 | sortModel | `Array<{ colId, sort, sortType }>` | | 排序方式 |
 | dataResponseKeyPath | string | | 数据在 response 中的路径 |

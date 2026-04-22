@@ -36,13 +36,16 @@ Field type: `SELECT`
 
 ## componentProps
 
+> 数据源配置（`dataSource` / `dataUrl`）的完整规范见 `skills/ceta/references/data-source-rules.md`。两者二选一。
+
 | 属性 | 类型 | 说明 |
 |------|------|------|
-| options | array | 静态选项 `[{ label, value }]` |
+| options | array | 静态选项 `[{ label, value }]`，与 `dataSource`/`dataUrl` 互斥 |
 | multiple | boolean | 是否多选 |
 | stringEqual | boolean | 值比较是否用字符串 |
-| dataSource | object | 引用其他表单数据源 `{ token, pbcToken }` |
-| mapping | object | 数据源字段映射 `{ value, label }` |
+| dataSource | object | 引用其他表单数据源 `{ token, pbcToken }`，与 `options` 互斥 |
+| dataUrl | string | 通过 URL 获取选项数据，与 `options` 和 `dataSource` 互斥 |
+| mapping | object | 数据源字段映射 `{ value, label }`，使用 `dataSource` 或 `dataUrl` 时必填 |
 
 ## HTML 识别
 

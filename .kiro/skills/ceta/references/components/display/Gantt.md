@@ -36,9 +36,11 @@
 
 ## componentProps
 
+> 数据源配置的完整规范见 `skills/ceta/references/data-source-rules.md`。Gantt 使用 `dataSources`（复数）配置任务、关联、日历三种数据源。
+
 | 属性 | 类型 | 说明 |
 |------|------|------|
-| dataSources | `{ task, link?, calendar? }` | 数据源（任务、关联、日历） |
+| dataSources | `{ task, link?, calendar? }` | 数据源（任务、关联、日历），每个子项结构同 `dataSource`：`{ token, pbcToken }` |
 | mapping | object | 数据字段映射（text, start_date, end_date, duration, progress, parent, type） |
 | columnDefs | array | 左侧表格列定义（ag-grid） |
 | relation | `{ colId, value }` | 作为表单子表的关系配置 |

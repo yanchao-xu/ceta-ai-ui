@@ -39,10 +39,12 @@ Field type: `ACL`
 
 ## componentProps
 
+> 数据源配置（`dataSource` / `dataUrl`）的完整规范见 `skills/ceta/references/data-source-rules.md`。两者二选一。
+
 | 属性 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| dataSource | `{ token, pbcToken, listUrl?, listIdsUrl?, listByIdsUrl? }` | | 指定 FormEntity 数据源 |
-| dataUrl | string | | 一次性获取所有数据的 URL |
+| dataSource | `{ token, pbcToken, listUrl?, listIdsUrl?, listByIdsUrl? }` | | 指定 FormEntity 数据源，与 `dataUrl` 二选一 |
+| dataUrl | string | | 一次性获取所有数据的 URL，与 `dataSource` 二选一 |
 | idListUrl | string | | 懒加载模式：先获取所有 id |
 | mapping | `{ value: string, label: string }` | `{ value: 'value', label: 'label' }` | 值映射关系 |
 | useOriginValue | boolean | `false` | 是否保存原始映射值 |
