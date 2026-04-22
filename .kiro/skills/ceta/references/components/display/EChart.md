@@ -287,6 +287,8 @@ EChart 的高度有两个位置可以设置，**必须至少设置一个**，否
 
 ## componentProps 完整属性表
 
+> 数据源配置（`dataSource` / `dataUrl`）的完整规范见 `skills/ceta/references/data-source-rules.md`。两者二选一。
+
 | 属性 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | category | `'axis'` \| `'pie'` \| `'generic'` | | axis=轴坐标系（柱状图/折线图），pie=饼图，generic=直接用数据源结果作为 option |

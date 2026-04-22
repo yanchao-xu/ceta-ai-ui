@@ -299,7 +299,7 @@ HTML class: .form-renderer-default-button
 | HTML 元素 | CETA component |
 |-----------|---------------|
 | `<form>` | 识别为表单页，生成 Layout schemaJson |
-| `<table>` | Table（需构造 columnDefs） |
+| `<table>` | Table 或 EditableTable（需判断意图，见下方规则） |
 | `<input type="text">` | Input |
 | `<input type="email">` | Input |
 | `<input type="tel">` | Input |
@@ -381,6 +381,33 @@ HTML: .form-renderer > .card-layout > .icp-ag-table
 ```
 
 Table / EditableTable 的高度应从 HTML 中读取实际值，如果读不出来则默认设为 `450px`，不要使用 `"height": "100%"`。
+
+### `<table>` 的 Table vs EditableTable 识别
+
+通用 HTML 中的 `<table>` 需要根据 HTML 特征判断映射为 Table 还是 EditableTable：
+
+| HTML 特征 | 映射组件 | 说明 |
+|-----------|---------|------|
+| `<td>` 内是纯文本/链接 | Table | 只读展示 |
+| `<td>` 内有 `<input>`/`<select>` 等输入控件 | EditableTable | 用户逐格编辑 |
+| 表格附近有"添加行"/"删除行"按钮 | EditableTable | 支持增删行 |
+| `.editable-table-element` | EditableTable | CETA 原生可编辑表格 |
+| `.icp-ag-table` / `.ag-theme-quartz` | Table | CETA 原生只读表格 |
+| 表格嵌套在 `<form>` 内部 | 倾向 EditableTable | 作为表单子表 |
+| 操作列有"查看"/"编辑"跳转按钮 | Table | 跳转到独立页面编辑 |
+
+两种表格都需要配置数据源。数据源规范见 `skills/ceta/references/data-source-rules.md`。
+
+- Table 用 `componentProps.dataSource`（或 `dataUrl`）：
+  ```json
+  { "dataSource": { "token": "{entityToken}", "pbcToken": "{pbcToken}" } }
+  ```
+- EditableTable 用 `fieldConfig`：
+  ```json
+  { "fieldConfig": { "pbcToken": "...", "formEntityToken": "...", "relations": [...] } }
+  ```
+
+意图判断的详细流程见 `skills/ceta-html-analyzer/SKILL.md` 的 Step B 展示组件选择规则。
 
 ---
 

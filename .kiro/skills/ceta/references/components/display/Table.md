@@ -25,9 +25,11 @@
 
 ## componentProps
 
+> 数据源配置（`dataSource` / `dataUrl`）的完整规范见 `skills/ceta/references/data-source-rules.md`。
+
 | 属性 | 类型 | 默认值 | 必填 | Variable Pattern | 说明 |
 |------|------|--------|------|:---:|------|
-| dataSource | `{ token, pbcToken?, listUrl? }` | | 是 | | 数据源，`token` 指向 FormEntity |
+| dataSource | `{ token, pbcToken?, listUrl? }` | | 是 | | 数据源，`token` 指向 FormEntity。与 `dataUrl` 二选一 |
 | columnDefs | array | | 是 | | 列定义数组（见下方详解） |
 | defaultColDef | object | | 否 | | 默认列属性，会与内置默认值合并 |
 | dataUrl | string | | 否 | ✔️ | 通过自定义 URL 一次性获取所有表格数据 |
